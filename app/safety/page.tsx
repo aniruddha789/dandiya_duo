@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/AppShell";
 import { Card } from "@/components/ui";
-import { GRIEVANCE_EMAIL, WIPE_DATE } from "@/lib/config";
+import { GRIEVANCE_EMAIL } from "@/lib/config";
+import { wipeLabel } from "@/lib/festival";
 
 export const metadata = { title: "Safety — DandiyaDuo" };
 
@@ -8,7 +9,7 @@ export default function Safety() {
   return (
     <AppShell showNav={false}>
       <div className="mx-auto max-w-2xl pt-6">
-        <h1 className="headline font-display text-4xl font-black">Dance safe, saathi</h1>
+        <h1 className="headline font-display text-4xl font-extrabold">Dance safe</h1>
         <div className="mt-5 flex flex-col gap-4">
           <Card>
             <h2 className="font-display text-xl font-bold">18+ only</h2>
@@ -28,7 +29,7 @@ export default function Safety() {
           </Card>
           <Card>
             <h2 className="font-display text-xl font-bold">You’re in control</h2>
-            <p className="mt-1 text-sm">Pause, edit or permanently delete your profile any time from Account. Everything — profiles, photos, matches — is deleted on {WIPE_DATE}.</p>
+            <p className="mt-1 text-sm on-light-muted">Pause, edit or permanently delete your profile any time from Account. Everything — profiles, photos, Duos — is deleted on {wipeLabel()}.</p>
           </Card>
           <Card>
             <h2 className="font-display text-xl font-bold">What we never do</h2>

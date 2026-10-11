@@ -1,18 +1,33 @@
 import type { Metadata } from "next";
-import { Fraunces, Outfit } from "next/font/google";
+import { Baloo_2, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
+import { siteUrl } from "@/lib/site";
 
-const display = Fraunces({ subsets: ["latin"], weight: ["700", "900"], variable: "--font-display" });
-const body = Outfit({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-body" });
+const display = Baloo_2({ subsets: ["latin"], weight: ["700", "800"], variable: "--font-display" });
+const body = DM_Sans({ subsets: ["latin"], weight: ["400", "500", "700"], variable: "--font-body" });
+
+const base = siteUrl();
 
 export const metadata: Metadata = {
-  title: "DandiyaDuo — Find your circle this Navratri",
+  metadataBase: new URL(base),
+  title: {
+    default: "DandiyaDuo — Find your DandiyaDuo",
+    template: "%s — DandiyaDuo",
+  },
   description:
-    "A free, seasonal, mutual-match-only garba partner finder for Navratri in Bengaluru, Delhi NCR and Pune.",
+    "A free, seasonal, mutual-match-only garba and dandiya partner finder for Navratri, in cities across India.",
+  openGraph: {
+    type: "website",
+    siteName: "DandiyaDuo",
+    title: "DandiyaDuo — Find your DandiyaDuo",
+    description: "Match with a dance partner for Navratri. Free. Mutual match only. Gone after the festival.",
+  },
+  twitter: { card: "summary_large_image" },
+  icons: { icon: "/icon.svg" },
 };
 
-export const viewport = { themeColor: "#f0a92e" };
+export const viewport = { themeColor: "#1B1030" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

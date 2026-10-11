@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { DiyaMascot, SunflowerMascot } from "@/components/Mascots";
-import { ScoreBadge } from "@/components/ui";
+import { SunflowerMascot } from "@/components/Mascots";
+import { Duo } from "@/components/Duo";
+import { Confetti, ScoreBadge } from "@/components/ui";
 import { photoUrl, type MatchCard } from "@/lib/types";
 import { DANCE_LEVELS, INTENTIONS, nightLabel } from "@/lib/config";
 
@@ -23,7 +24,7 @@ export function MatchCardView({
     <article className="sticker-card relative p-4">
       <ScoreBadge score={card.score} />
       <div className="flex items-center gap-3 pr-16">
-        <div className="scallop h-20 w-20 shrink-0">
+        <div className="avatar-ring h-20 w-20 shrink-0">
           {photo ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={photoUrl(photo)} alt="" className="h-full w-full object-cover" />
@@ -59,7 +60,7 @@ export function MatchCardView({
       {card.reasons.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5" aria-label="Why you match">
           {card.reasons.map((r) => (
-            <span key={r} className="rounded-full border-2 px-2.5 py-1 text-xs font-bold" style={{ borderColor: "var(--bark)", background: "#ffd166" }}>
+            <span key={r} className="reason-chip">
               ✨ {r}
             </span>
           ))}
@@ -68,8 +69,8 @@ export function MatchCardView({
 
       {(card.prompt_move || card.prompt_nonneg) && (
         <div className="mt-2 flex flex-col gap-2">
-          {card.prompt_move && <p className="rounded-xl border-2 p-2 text-sm" style={{ borderColor: "var(--bark)" }}><b>My signature move:</b> {card.prompt_move}</p>}
-          {card.prompt_nonneg && <p className="rounded-xl border-2 p-2 text-sm" style={{ borderColor: "var(--bark)" }}><b>Non-negotiable:</b> {card.prompt_nonneg}</p>}
+          {card.prompt_move && <p className="rounded-xl p-2 text-sm" style={{ border: "1px solid var(--line-light)" }}><b>My signature move:</b> {card.prompt_move}</p>}
+          {card.prompt_nonneg && <p className="rounded-xl p-2 text-sm" style={{ border: "1px solid var(--line-light)" }}><b>Non-negotiable:</b> {card.prompt_nonneg}</p>}
         </div>
       )}
 
@@ -88,13 +89,14 @@ export function MatchCardView({
 export function Celebration({ name, onClose }: { name: string; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal aria-label="Mutual match">
-      <div className="sticker-card max-w-sm p-6 text-center">
-        <div className="flex justify-center gap-2" aria-hidden>
-          <DiyaMascot size={70} /><DiyaMascot size={90} /><DiyaMascot size={70} />
+      <div className="sticker-card relative max-w-sm overflow-hidden p-6 text-center">
+        <Confetti />
+        <div className="flex justify-center" aria-hidden>
+          <Duo size={150} />
         </div>
-        <h2 className="headline font-display mt-2 text-4xl font-black">It’s a match!</h2>
-        <p className="mt-2 font-semibold">{name} said yes too. Find them in Saathi 🪔</p>
-        <button className="btn-primary mt-4 w-full" onClick={onClose}>Say hi in Saathi</button>
+        <h2 className="font-display mt-2 text-4xl font-extrabold" style={{ color: "var(--ink)" }}>It’s a Duo!</h2>
+        <p className="mt-2 font-semibold">{name} said yes too. Find them in Duos ✨</p>
+        <button className="btn-primary mt-4 w-full" onClick={onClose}>Say hi in Duos</button>
       </div>
     </div>
   );
@@ -110,13 +112,13 @@ export function ReportDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal aria-label={`Report ${name}`}>
       <div className="sticker-card w-full max-w-sm p-5">
-        <h2 className="font-display text-2xl font-black">Report {name}</h2>
+        <h2 className="font-display text-2xl font-extrabold" style={{ color: "var(--ink)" }}>Report {name}</h2>
         <label className="label mt-3" htmlFor="rr">What happened?</label>
         <input id="rr" className="field" value={reason} maxLength={120} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Asked for my number before matching" />
         <label className="label mt-3" htmlFor="rd">Details (optional)</label>
         <textarea id="rd" className="field" rows={3} value={details} maxLength={500} onChange={(e) => setDetails(e.target.value)} />
         <div className="mt-4 flex gap-2">
-          <button className="btn-secondary flex-1" onClick={onClose}>Cancel</button>
+          <button className="btn-secondary btn-on-light flex-1" onClick={onClose}>Cancel</button>
           <button className="btn-primary flex-1" disabled={reason.trim().length < 3} onClick={() => onSubmit(reason.trim(), details.trim())}>Send report</button>
         </div>
       </div>

@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+  <body style="margin:0;background:#1B1030;color:#FFF3E0;font-family:sans-serif;">
+    <div style="max-width:560px;margin:0 auto;padding:32px 20px;">
+      <!-- DandiyaDuo magic-link template. For hosted Supabase, paste the HTML
+        and text versions into Dashboard → Authentication → Email Templates.
+        Configure a custom SMTP sender (e.g. Resend) with a verified domain —
+        never the default Supabase sender or resend.dev for real users. -->
+      <p style="font-size:26px;font-weight:800;margin:0 0 4px;">
+        Dandiya<span style="color:#FF4F8B;">Duo</span>
+      </p>
+      <h1 style="font-size:24px;margin:12px 0;">Your login link is here 🪔</h1>
+      <p>Tap the button below to hop in. It expires in 60 minutes.</p>
+      <p>
+        <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:linear-gradient(94deg,#FFB627,#FF7A1A);color:#1B1030;font-weight:800;text-decoration:none;padding:14px 28px;border-radius:999px;">
+          Log in to DandiyaDuo
+        </a>
+      </p>
+      <p>In the wrong browser? Enter this code instead:</p>
+      <p style="font-size:32px;letter-spacing:8px;font-weight:800;color:#FFB627;">{{ .Token }}</p>
+      <p style="opacity:.7;font-size:13px;">Didn’t ask for this? Ignore it — nothing happens without you.</p>
+      <p style="opacity:.7;font-size:13px;">18+ only · Free · Everything is deleted after the festival.</p>
+    </div>
+  </body>
+</html>

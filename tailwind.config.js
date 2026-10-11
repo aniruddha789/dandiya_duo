@@ -4,20 +4,25 @@ const config = {
   theme: {
     extend: {
       colors: {
+        ink: "var(--ink)",
+        night: "var(--night)",
+        night2: "var(--night-2)",
+        surface: "var(--surface)",
         marigold: "var(--marigold)",
-        marigoldeep: "var(--marigold-deep)",
+        pink: "var(--pink)",
+        teal: "var(--teal)",
+        saffron: "var(--saffron)",
         cream: "var(--cream)",
-        bark: "var(--bark)",
-        crimson: "var(--crimson)",
-        royal: "var(--royal)",
-        leaf: "var(--leaf)",
       },
       fontFamily: {
-        display: ["var(--font-display)", "serif"],
+        display: ["var(--font-display)", "sans-serif"],
         body: ["var(--font-body)", "sans-serif"],
       },
-      borderRadius: { card: "22px", pill: "999px" },
-      boxShadow: { hard: "5px 5px 0 var(--bark)", hardsm: "3px 3px 0 var(--bark)" },
+      borderRadius: { card: "24px", pill: "999px" },
+      boxShadow: {
+        glow: "0 0 34px -12px rgba(255, 79, 139, 0.55)",
+        soft: "0 18px 44px -18px rgba(0, 0, 0, 0.55)",
+      },
     },
   },
   plugins: [],

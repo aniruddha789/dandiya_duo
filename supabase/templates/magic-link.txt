@@ -1,0 +1,7 @@
+Use this code to log in to DandiyaDuo: {{ .Token }}
+
+Or tap your magic link (expires in 60 minutes).
+
+Didn't ask for this? Ignore it — nothing happens without you.
+
+18+ only. Free. Everything is deleted after the festival.

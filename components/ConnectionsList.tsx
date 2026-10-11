@@ -4,9 +4,11 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppShell } from "@/components/AppShell";
 import { Banner, Card, SecondaryButton } from "@/components/ui";
-import { DiyaMascot, SunflowerMascot } from "@/components/Mascots";
+import { Duo } from "@/components/Duo";
+import { SunflowerMascot } from "@/components/Mascots";
 import { ReportDialog } from "@/components/MatchCard";
 import { createClient } from "@/lib/supabase/client";
+import { en } from "@/lib/strings";
 import { photoUrl, type Connection } from "@/lib/types";
 
 export default function ConnectionsPage() {
@@ -60,16 +62,16 @@ export default function ConnectionsPage() {
   return (
     <AppShell>
       <div className="mx-auto max-w-xl pt-4">
-        <h1 className="headline font-display text-4xl font-black">Saathi</h1>
-        <p className="font-semibold">Mutual yeses only. Handles unlocked 🔓</p>
+        <h1 className="headline font-display text-4xl font-extrabold">Your Duos</h1>
+        <p className="font-semibold muted">Mutual yeses only. Handles unlocked 🔓</p>
         {notice && <div className="mt-3"><Banner icon="🪔">{notice}</Banner></div>}
         {list.isPending && <Card className="mt-4">Checking the circle…</Card>}
 
         {!list.isPending && conns.length === 0 && (
           <Card className="mt-4 text-center">
-            <div className="flex justify-center"><DiyaMascot size={90} /></div>
-            <h2 className="font-display text-2xl font-black">No saathi yet</h2>
-            <p className="mt-1 text-sm font-semibold">Tap “Let’s dance” on someone you like.</p>
+            <div className="flex justify-center"><Duo size={130} /></div>
+            <h2 className="font-display text-2xl font-extrabold" style={{ color: "var(--ink)" }}>{en.emptyDuos}</h2>
+            <p className="mt-1 text-sm font-semibold on-light-muted">Tap “Let’s dance” on someone you like.</p>
           </Card>
         )}
 
@@ -80,7 +82,7 @@ export default function ConnectionsPage() {
             return (
               <article key={c.match_id} className="sticker-card p-4">
                 <div className="flex items-center gap-3">
-                  <div className="scallop h-20 w-20 shrink-0">
+                  <div className="avatar-ring h-20 w-20 shrink-0">
                     {photo ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={photoUrl(photo)} alt="" className="h-full w-full object-cover" />
@@ -89,8 +91,8 @@ export default function ConnectionsPage() {
                     )}
                   </div>
                   <div>
-                    <h3 className="font-display text-2xl font-black">{c.first_name}, {c.age}</h3>
-                    <p className="text-sm font-semibold">📍 {c.area_name ?? "Somewhere nearby"} · {c.score}% good vibes</p>
+                    <h3 className="font-display text-2xl font-extrabold">{c.first_name}, {c.age}</h3>
+                    <p className="text-sm font-semibold">📍 {c.area_name ?? "Somewhere nearby"} · {c.score}% vibe</p>
                   </div>
                 </div>
                 {handle ? (
@@ -101,13 +103,15 @@ export default function ConnectionsPage() {
                     @{handle} on Instagram
                   </a>
                 ) : (
-                  <SecondaryButton className="mt-3 w-full" onClick={() => void reveal(c)}>
+                  <SecondaryButton className="btn-on-light mt-3 w-full" onClick={() => void reveal(c)}>
                     Reveal Instagram
                   </SecondaryButton>
                 )}
-                <Banner icon="📍">
-                  <span>Meet at the garba night — somewhere public and crowded. Tell a friend where you’re headed.</span>
-                </Banner>
+                <div className="mt-2">
+                  <Banner icon="📍" tone="light">
+                    <span>Meet at the garba night — somewhere public and crowded. Tell a friend where you’re headed.</span>
+                  </Banner>
+                </div>
                 <div className="mt-2 flex gap-3">
                   <button className="text-link" onClick={() => void unmatch(c)}>Unmatch</button>
                   <button className="text-link" onClick={() => setReporting(c)}>Report</button>

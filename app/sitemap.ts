@@ -1,12 +1,12 @@
 import type { MetadataRoute } from "next";
+import { STATIC_CITIES } from "@/lib/cities";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  const cities = ["bengaluru", "delhi-ncr", "pune"];
   return [
     { url: `${base}/`, changeFrequency: "daily", priority: 1 },
-    ...cities.map((c) => ({
-      url: `${base}/?city=${c}` as string,
+    ...STATIC_CITIES.map((c) => ({
+      url: `${base}/c/${c.slug}` as string,
       changeFrequency: "daily" as const,
       priority: 0.9,
     })),

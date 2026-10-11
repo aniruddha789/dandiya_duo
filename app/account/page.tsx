@@ -43,10 +43,12 @@ export default async function Account() {
   }
 
   const draft = {
-    city: profile.city, ageConfirmed: true, first_name: profile.first_name, age: profile.age,
+    citySlug: "", cityId: profile.city_id ?? "", ageConfirmed: true,
+    first_name: profile.first_name, age: profile.age,
     gender: profile.gender, seeking: profile.seeking, area_id: profile.area_id ?? "",
     nights: [], dance_level: profile.dance_level, intention: profile.intention,
-    how_far: profile.how_far, venue_text: "", star_sign: null, languages: [],
+    how_far: profile.how_far, include_nearby: profile.include_nearby ?? true, venue_text: "",
+    star_sign: null, languages: [],
     hometown: "", work: "", interests: [], customInterests: [], movie_genres: [],
     fav_movie: "", show_languages: true, show_hometown: true, diet: "",
     cuisines: [], after_garba: "", show_food: true, weight_star: 1, weight_food: 1,
@@ -55,5 +57,21 @@ export default async function Account() {
     consentTerms: true, consentPrivacy: true, consentWipe: true,
   } satisfies Draft;
 
-  return <AccountPage draft={draft} paused={profile.is_paused} blocked={blockedNames} completeness={completeness} />;
+  let metroName: string | null = null;
+  if (profile.city_id) {
+    const { data: city } = await supabase.from("cities").select("metro_slug").eq("id", profile.city_id).single();
+    metroName = city?.metro_slug ?? null;
+  }
+
+  return (
+    <AccountPage
+      draft={draft}
+      paused={profile.is_paused}
+      wasLive={profile.is_live}
+      blocked={blockedNames}
+      completeness={completeness}
+      includeNearby={profile.include_nearby ?? true}
+      metroName={metroName}
+    />
+  );
 }

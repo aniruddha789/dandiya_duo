@@ -1,10 +1,12 @@
 // Season + wipe dates are config values so the app can be reused next season.
+// Never print these raw — use fmtDay()/seasonLabel() from lib/festival.ts.
 export const SEASON_START = "2026-10-11";
 export const SEASON_END = "2026-10-19";
 export const WIPE_DATE = "2026-10-21";
 export const GRIEVANCE_EMAIL = "hello@dandiyaduo.example";
 
-export const SEASON_LABEL = "11–19 Oct 2026";
+// Thin-pool threshold: fewer candidates than this triggers the warming-up nudge.
+export const THIN_POOL_MIN = 10;
 
 export const CITIES = [
   { id: "bengaluru", label: "Bengaluru" },
@@ -62,8 +64,13 @@ export const INTENTIONS = [
 export const HOW_FAR = [
   { id: "same_area", label: "Same area only" },
   { id: "nearby", label: "Nearby zones" },
-  { id: "anywhere", label: "Anywhere in my city" },
+  { id: "anywhere", label: "Anywhere nearby" },
 ] as const;
+
+/** "Anywhere" wording depends on metro pooling (brief §3). */
+export function anywhereLabel(metroOn: boolean) {
+  return metroOn ? "Anywhere in my metro" : "Anywhere in my city";
+}
 
 export const LANGUAGES = ["Hindi", "English", "Kannada", "Gujarati", "Marathi", "Punjabi", "Tamil", "Telugu", "Bengali", "Other"];
 export const WORKS = ["Tech", "Design", "Product", "Marketing", "Founder", "Finance", "Student", "Creative", "Other"];

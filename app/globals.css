@@ -2,18 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
-/* DandiyaDuo design tokens — original "bold sticker / festival poster" look */
+/* DandiyaDuo brand tokens — "festival night, mirror-work and colour".
+   Deep midnight-plum base, luminous accents, soft glow. No heavy outlines. */
 :root {
-  --marigold: #f0a92e;
-  --marigold-deep: #d98f14;
-  --cream: #fff6e6;
-  --cream-dim: #f7e8cd;
-  --bark: #3d2313;
-  --crimson: #b3202e;
-  --royal: #2338b0;
-  --leaf: #2e7d3a;
-  --dot: rgba(61, 35, 19, 0.14);
-  --radius-card: 22px;
+  --ink: #1b1030;
+  --night: #2a1650;
+  --night-2: #3a2168;
+  --surface: #fff8ee;
+  --surface-2: #f7ead3;
+  --marigold: #ffb627;
+  --pink: #ff4f8b;
+  --teal: #1fb6a6;
+  --saffron: #ff7a1a;
+  --cream: #fff3e0;
+  --muted: rgba(255, 243, 224, 0.74);
+  --line-dark: rgba(255, 243, 224, 0.16);
+  --line-light: rgba(27, 16, 48, 0.14);
+  --radius-card: 24px;
+  color-scheme: dark;
 }
 
 html {
@@ -21,33 +27,70 @@ html {
 }
 
 body {
-  background-color: var(--marigold);
-  background-image: radial-gradient(var(--dot) 1.4px, transparent 1.4px);
-  background-size: 22px 22px;
-  color: var(--bark);
+  color: var(--cream);
   font-family: var(--font-body), system-ui, sans-serif;
   min-height: 100vh;
+  background:
+    radial-gradient(900px 480px at 12% -6%, rgba(255, 79, 139, 0.28), transparent 60%),
+    radial-gradient(800px 460px at 88% 4%, rgba(31, 182, 166, 0.22), transparent 60%),
+    radial-gradient(700px 700px at 50% 110%, rgba(255, 182, 39, 0.14), transparent 60%),
+    linear-gradient(180deg, #241343 0%, var(--night) 34%, var(--ink) 100%);
+  background-attachment: fixed;
+}
+
+/* Subtle mirror-work (shisha) circle pattern for hero bands. CSS only. */
+.shisha {
+  background-image:
+    radial-gradient(circle at 50% 50%, rgba(255, 243, 224, 0.14) 0 1.6px, transparent 1.7px),
+    radial-gradient(circle at 50% 50%, rgba(255, 182, 39, 0.1) 0 5px, transparent 5.5px);
+  background-size: 30px 30px, 90px 90px;
+  background-position: 0 0, 15px 15px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .shisha-animated {
+    animation: shisha-drift 26s linear infinite;
+  }
+  @keyframes shisha-drift {
+    to { background-position: 60px 30px, 75px 45px; }
+  }
 }
 
 .font-display {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-display), system-ui, sans-serif;
 }
 
 .headline {
-  color: var(--royal);
-  text-shadow:
-    2px 2px 0 var(--cream),
-    -1px -1px 0 var(--cream),
-    1px -1px 0 var(--cream),
-    -1px 1px 0 var(--cream);
-  letter-spacing: -0.01em;
+  color: var(--cream);
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.headline .accent {
+  background: linear-gradient(92deg, var(--marigold) 10%, var(--pink) 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-.sticker-card {
-  background: var(--cream);
-  border: 3px solid var(--bark);
+.card {
+  background: var(--surface);
+  color: var(--ink);
   border-radius: var(--radius-card);
-  box-shadow: 5px 5px 0 var(--bark);
+  border: 1px solid var(--line-light);
+  box-shadow:
+    0 18px 44px -18px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 243, 224, 0.04),
+    0 0 34px -12px rgba(255, 79, 139, 0.35);
+}
+
+/* Legacy class name kept so existing components keep working. */
+.sticker-card {
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--line-light);
+  box-shadow:
+    0 18px 44px -18px rgba(0, 0, 0, 0.55),
+    0 0 34px -12px rgba(255, 79, 139, 0.35);
 }
 
 .btn-primary {
@@ -55,19 +98,21 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 48px;
-  padding: 0.7rem 1.6rem;
+  padding: 0.75rem 1.7rem;
   border-radius: 999px;
-  background: var(--bark);
-  color: #ffd166;
-  font-family: var(--font-display), serif;
+  background: linear-gradient(94deg, var(--marigold), var(--saffron));
+  color: var(--ink);
+  font-family: var(--font-display), sans-serif;
+  font-weight: 700;
   font-size: 1.05rem;
-  border: 3px solid var(--bark);
-  box-shadow: 3px 3px 0 rgba(61, 35, 19, 0.35);
+  border: none;
   cursor: pointer;
+  box-shadow: 0 10px 26px -10px rgba(255, 122, 26, 0.7), 0 0 22px -6px rgba(255, 79, 139, 0.55);
 }
 .btn-primary:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .btn-secondary {
@@ -75,13 +120,17 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 48px;
-  padding: 0.7rem 1.6rem;
+  padding: 0.75rem 1.7rem;
   border-radius: 999px;
-  background: var(--cream);
-  color: var(--bark);
-  border: 3px solid var(--bark);
+  background: transparent;
+  color: var(--cream);
+  border: 1.5px solid var(--line-dark);
   font-weight: 600;
   cursor: pointer;
+}
+.btn-on-light {
+  color: var(--ink);
+  border-color: var(--line-light);
 }
 
 .chip {
@@ -90,42 +139,59 @@ body {
   min-height: 44px;
   padding: 0.45rem 1rem;
   border-radius: 999px;
-  border: 2.5px solid var(--bark);
-  background: var(--cream);
+  border: 1.5px solid rgba(27, 16, 48, 0.28);
+  background: rgba(27, 16, 48, 0.05);
+  color: var(--ink);
   font-weight: 600;
   font-size: 0.92rem;
   cursor: pointer;
   user-select: none;
 }
 .chip[aria-pressed="true"] {
-  background: var(--bark);
-  color: #ffd166;
+  background: var(--night);
+  border-color: var(--night);
+  color: var(--cream);
+}
+.chip-on-dark {
+  border-color: var(--line-dark);
+  background: rgba(255, 243, 224, 0.07);
+  color: var(--cream);
+}
+.chip-on-dark[aria-pressed="true"] {
+  background: linear-gradient(94deg, var(--marigold), var(--saffron));
+  border-color: transparent;
+  color: var(--ink);
 }
 
 .banner {
   display: flex;
   gap: 0.6rem;
   align-items: flex-start;
-  background: #ffd166;
-  border: 2.5px solid var(--bark);
+  background: rgba(255, 243, 224, 0.08);
+  border: 1px solid var(--line-dark);
   border-radius: 16px;
   padding: 0.7rem 0.9rem;
   font-size: 0.92rem;
-  box-shadow: 3px 3px 0 var(--bark);
+  color: var(--cream);
+}
+.banner-on-light {
+  background: rgba(27, 16, 48, 0.05);
+  border-color: var(--line-light);
+  color: var(--ink);
 }
 
 .field {
   width: 100%;
   min-height: 48px;
   border-radius: 14px;
-  border: 2.5px solid var(--bark);
+  border: 1.5px solid rgba(27, 16, 48, 0.28);
   background: #fffdf7;
   padding: 0.6rem 0.9rem;
   font-size: 1rem;
-  color: var(--bark);
+  color: var(--ink);
 }
 .field::placeholder {
-  color: rgba(61, 35, 19, 0.45);
+  color: rgba(27, 16, 48, 0.45);
 }
 
 .label {
@@ -146,11 +212,102 @@ body {
   padding: 6px 4px;
 }
 
-.scallop {
-  border-radius: 48% 52% 51% 49% / 52% 48% 52% 48%;
-  border: 3px solid var(--bark);
+.avatar-ring {
+  border-radius: 999px;
   overflow: hidden;
-  background: var(--cream-dim);
+  background: var(--surface-2);
+  border: 2px solid rgba(255, 182, 39, 0.65);
+  box-shadow: 0 0 18px -4px rgba(255, 182, 39, 0.6);
+}
+
+/* Mirror-work score sticker: conic shimmer ring, soft glow. */
+.vibe-badge {
+  position: absolute;
+  right: 0.6rem;
+  top: 0.6rem;
+  display: flex;
+  height: 4.2rem;
+  width: 4.2rem;
+  transform: rotate(6deg);
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  text-align: center;
+  color: var(--cream);
+  background:
+    radial-gradient(circle at 50% 42%, #4a2a86 0 58%, transparent 59%),
+    conic-gradient(from 20deg, var(--marigold), var(--pink), var(--teal), var(--marigold));
+  box-shadow: 0 8px 22px -8px rgba(255, 79, 139, 0.8), 0 0 16px -4px rgba(255, 182, 39, 0.7);
+}
+
+.reason-chip {
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink);
+  background: linear-gradient(94deg, rgba(255, 182, 39, 0.28), rgba(255, 79, 139, 0.22));
+  border: 1px solid rgba(27, 16, 48, 0.16);
+}
+
+/* Celebration sparkles in brand colours. */
+.sparkle-field {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.sparkle-field i {
+  position: absolute;
+  top: -8%;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  opacity: 0.9;
+  animation: sparkle-fall 1.6s ease-in forwards;
+}
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes sparkle-fall {
+    to { transform: translateY(340px) rotate(320deg); opacity: 0; }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sparkle-field i { animation: none; opacity: 0; }
+  .shisha-animated { animation: none; }
+}
+
+/* Mirror-dot progress (onboarding). */
+.mirror-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+}
+.mirror-dots i {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255, 243, 224, 0.4);
+  background: transparent;
+}
+.mirror-dots i.done {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--marigold), var(--pink));
+  box-shadow: 0 0 12px -2px rgba(255, 79, 139, 0.9);
+}
+
+:focus-visible {
+  outline: 3px solid var(--marigold);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.muted {
+  color: var(--muted);
+}
+.on-light-muted {
+  color: rgba(27, 16, 48, 0.66);
 }
 
 @media (prefers-reduced-motion: reduce) {

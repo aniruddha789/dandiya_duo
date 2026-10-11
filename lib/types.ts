@@ -1,4 +1,4 @@
-export type Area = { id: string; city: string; name: string; zone: string };
+export type Area = { id: string; city: string | null; city_id: string | null; name: string; zone: string };
 
 export type MatchCard = {
   profile_id: string;

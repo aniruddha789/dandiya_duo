@@ -3,28 +3,47 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { ProgressDiyas, SunflowerMascot } from "@/components/Mascots";
+import { SunflowerMascot } from "@/components/Mascots";
+import { CityCombobox } from "@/components/CityCombobox";
+import { CityRequestForm } from "@/components/LandingControls";
 import { Banner, Card, Chip, PrimaryButton, SecondaryButton } from "@/components/ui";
 import { photoUrl, type Area } from "@/lib/types";
 import { HANDLE_RE, liveReady, step1Done, step2Done, step6Done, type Draft } from "@/lib/completeness";
 import {
-  AFTER_GARBA, CITIES, CUISINES, DANCE_LEVELS, DIETS, GENDERS, HOW_FAR, INTENTIONS,
+  AFTER_GARBA, CUISINES, DANCE_LEVELS, DIETS, GENDERS, HOW_FAR, INTENTIONS,
   INTERESTS, LANGUAGES, MOVIE_GENRES, SEEKINGS, STAR_SIGNS, WEIGHT_MODES, WORKS,
-  nightLabel, seasonNights,
+  anywhereLabel, nightLabel, seasonNights,
 } from "@/lib/config";
+import { seasonLabel, wipeLabel } from "@/lib/festival";
+import { track } from "@/lib/analytics";
+import type { City } from "@/lib/cities";
 
 const STEP_TITLES = ["The basics", "Garba plans", "About you", "Food taste", "What matters", "Your card"];
+
+/** Legacy 3-value enum for rollback compat; new cities store null. */
+const SLUG_TO_LEGACY: Record<string, string> = { bengaluru: "bengaluru", "delhi-ncr": "delhi_ncr", pune: "pune" };
+
+function MirrorDots({ step, total = 6 }: { step: number; total?: number }) {
+  return (
+    <div className="mirror-dots" role="img" aria-label={`Step ${step} of ${total}`}>
+      {Array.from({ length: total }).map((_, i) => (
+        <i key={i} className={i < step ? "done" : undefined} />
+      ))}
+    </div>
+  );
+}
 
 type Props = {
   userId: string;
   areas: Area[];
+  cities: City[];
   initial: Draft;
   initialStep: number;
   initialPhotos: string[];
   isPaused: boolean;
 };
 
-export function Wizard({ userId, areas, initial, initialStep, initialPhotos, isPaused }: Props) {
+export function Wizard({ userId, areas, cities, initial, initialStep, initialPhotos, isPaused }: Props) {
   const router = useRouter();
   const params = useSearchParams();
   const editMode = params.get("edit") === "1";
@@ -34,9 +53,13 @@ export function Wizard({ userId, areas, initial, initialStep, initialPhotos, isP
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [customInput, setCustomInput] = useState("");
+  const [requestingCity, setRequestingCity] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const cityAreas = useMemo(() => areas.filter((a) => a.city === d.city), [areas, d.city]);
+  const selectedCity = useMemo(() => cities.find((c) => c.id === d.cityId) ?? null, [cities, d.cityId]);
+  const cityAreas = useMemo(() => areas.filter((a) => a.city_id === d.cityId), [areas, d.cityId]);
+  const areaRequired = cityAreas.length > 0;
+  const metroOn = d.include_nearby && !!selectedCity?.metro_slug;
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setD((p) => ({ ...p, [k]: v }));
   const toggle = (k: "nights" | "languages" | "cuisines" | "movie_genres" | "interests", v: string) =>
     setD((p) => ({ ...p, [k]: p[k].includes(v) ? p[k].filter((x) => x !== v) : [...p[k], v] }));
@@ -53,18 +76,21 @@ export function Wizard({ userId, areas, initial, initialStep, initialPhotos, isP
     if (!silent) { setBusy(true); setError(null); }
     try {
       const supabase = createClient();
-      const live = liveReady(draft);
+      const areaReq = areas.some((a) => a.city_id === draft.cityId);
+      const live = liveReady(draft, areaReq);
       const { error: pErr } = await supabase.from("profiles").upsert({
         id: userId,
         first_name: draft.first_name.trim() || "Dancer",
         age: typeof draft.age === "number" ? draft.age : 18,
         gender: draft.gender || "woman",
         seeking: draft.seeking || "anyone",
-        city: draft.city || "bengaluru",
+        city: SLUG_TO_LEGACY[draft.citySlug] ?? null,
+        city_id: draft.cityId || null,
         area_id: draft.area_id || null,
         dance_level: draft.dance_level || "first_timer",
         intention: draft.intention || "just_dance",
         how_far: draft.how_far || "anywhere",
+        include_nearby: draft.include_nearby,
         star_sign: draft.star_sign,
         hometown: draft.hometown.trim() || null,
         work: draft.work || null,
@@ -120,10 +146,11 @@ export function Wizard({ userId, areas, initial, initialStep, initialPhotos, isP
   }
 
   async function next() {
-    if (step === 1 && !step1Done(d)) { setError("Fill the basics: city, 18+ tick, name, age, who you are, who you seek, and your area."); return; }
+    if (step === 1 && !step1Done(d, areaRequired)) { setError("Fill the basics: your city, the 18+ tick, name, age, who you are, who you seek" + (areaRequired ? ", and your area." : ".")); return; }
     if (step === 2 && !step2Done(d)) { setError("Pick at least one night and your dance style."); return; }
     const ok = await saveAll(d, step + 1);
     if (ok) {
+      track("onboarding_step", { step: step + 1 > 6 ? 6 : step + 1 });
       if (step === 6) {
         if (!step6Done(d)) { setError("Add your Instagram handle and tick all three consent boxes to go live."); return; }
         router.push(editMode ? "/account" : "/matches");
@@ -169,22 +196,31 @@ export function Wizard({ userId, areas, initial, initialStep, initialPhotos, isP
 
   return (
     <div className="mx-auto w-full max-w-[560px] pt-4">
-      <ProgressDiyas step={step} />
-      <p className="mt-2 text-center text-sm font-bold">Step {step} of 6 · {STEP_TITLES[step - 1]}</p>
+      <MirrorDots step={step} />
+      <p className="mt-2 text-center text-sm font-bold muted">Step {step} of 6 · {STEP_TITLES[step - 1]}</p>
 
       <Card className="mt-4">
-        {error && <div className="mb-3"><Banner icon="⚠️">{error}</Banner></div>}
+        {error && <div className="mb-3"><Banner icon="⚠️" tone="light">{error}</Banner></div>}
 
         {step === 1 && (
           <div className="flex flex-col gap-4">
             <div>
-              <span className="label">Which city?</span>
-              <div className="flex flex-wrap gap-2">
-                {CITIES.map((c) => <Chip key={c.id} selected={d.city === c.id} onClick={() => { set("city", c.id); set("area_id", ""); }}>{c.label}</Chip>)}
-              </div>
+              <span className="label" id="city-label">Which city?</span>
+              <CityCombobox
+                cities={cities}
+                value={selectedCity}
+                onChange={(c) => { set("citySlug", c?.slug ?? ""); set("cityId", c?.id ?? ""); set("area_id", ""); if (c) track("city_selected", { slug: c.slug, from: "onboarding" }); }}
+                onRequestCity={() => setRequestingCity((s) => !s)}
+                placeholder="Type your city…"
+              />
+              {requestingCity && (
+                <div className="mt-1">
+                  <CityRequestForm tone="light" onDone={() => setRequestingCity(false)} />
+                </div>
+              )}
             </div>
             <label className="flex items-start gap-2 font-semibold">
-              <input type="checkbox" className="mt-1 h-5 w-5 accent-[#b3202e]" checked={d.ageConfirmed} onChange={(e) => set("ageConfirmed", e.target.checked)} />
+              <input type="checkbox" className="mt-1 h-5 w-5 accent-[#FF4F8B]" checked={d.ageConfirmed} onChange={(e) => set("ageConfirmed", e.target.checked)} />
               I confirm I’m 18 years or older.
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -207,10 +243,16 @@ export function Wizard({ userId, areas, initial, initialStep, initialPhotos, isP
             </div>
             <div>
               <label className="label" htmlFor="area">My area</label>
-              <select id="area" className="field" value={d.area_id} onChange={(e) => set("area_id", e.target.value)}>
-                <option value="">Pick your neighbourhood…</option>
-                {cityAreas.map((a) => <option key={a.id} value={a.id}>{a.name} · {a.zone}</option>)}
-              </select>
+              {areaRequired ? (
+                <select id="area" className="field" value={d.area_id} onChange={(e) => set("area_id", e.target.value)}>
+                  <option value="">Pick your neighbourhood…</option>
+                  {cityAreas.map((a) => <option key={a.id} value={a.id}>{a.name} · {a.zone}</option>)}
+                </select>
+              ) : (
+                <p className="on-light-muted text-sm">
+                  {selectedCity ? `Anywhere in ${selectedCity.name} — we'll skip the area signal for you.` : "Pick a city first."}
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -218,7 +260,7 @@ export function Wizard({ userId, areas, initial, initialStep, initialPhotos, isP
         {step === 2 && (
           <div className="flex flex-col gap-4">
             <div>
-              <span className="label">Nights I’m going (11–19 Oct)</span>
+              <span className="label">Nights I’m going ({seasonLabel()})</span>
               <div className="flex flex-wrap gap-2">
                 {seasonNights().map((n) => (
                   <Chip key={n} selected={d.nights.includes(n)} onClick={() => toggle("nights", n)}>{nightLabel(n)}</Chip>
@@ -240,10 +282,21 @@ export function Wizard({ userId, areas, initial, initialStep, initialPhotos, isP
             <div>
               <span className="label">How far will you pull up?</span>
               <div className="flex flex-wrap gap-2">
-                {HOW_FAR.map((x) => <Chip key={x.id} selected={d.how_far === x.id} onClick={() => set("how_far", x.id)}>{x.label}</Chip>)}
+                {HOW_FAR.map((x) => (
+                  <Chip key={x.id} selected={d.how_far === x.id} onClick={() => set("how_far", x.id)}>
+                    {x.id === "anywhere" ? anywhereLabel(metroOn) : x.label}
+                  </Chip>
+                ))}
               </div>
-              <p className="mt-1 text-xs">Travelling widely means more matches.</p>
+              <p className="on-light-muted mt-1 text-xs">Travelling widely means more Duos.</p>
             </div>
+            {selectedCity?.metro_slug && (
+              <Toggle
+                label={`Include nearby cities (${selectedCity.metro_slug === "delhi" ? "Delhi, Gurugram, Noida" : "Mumbai, Thane, Navi Mumbai"})`}
+                value={d.include_nearby}
+                onChange={(v) => set("include_nearby", v)}
+              />
+            )}
             <div>
               <label className="label" htmlFor="venue">Venue or event name (optional)</label>
               <input id="venue" className="field" value={d.venue_text} maxLength={120} onChange={(e) => set("venue_text", e.target.value)} placeholder="Somewhere else" />
@@ -287,7 +340,7 @@ export function Wizard({ userId, areas, initial, initialStep, initialPhotos, isP
               {d.customInterests.length < 5 && (
                 <div className="mt-2 flex gap-2">
                   <input className="field" value={customInput} maxLength={20} onChange={(e) => setCustomInput(e.target.value)} placeholder="Add your own (max 20 chars)" />
-                  <SecondaryButton onClick={() => { const v = customInput.trim(); if (v && !d.customInterests.includes(v)) set("customInterests", [...d.customInterests, v]); setCustomInput(""); }}>Add</SecondaryButton>
+                  <SecondaryButton className="btn-on-light" onClick={() => { const v = customInput.trim(); if (v && !d.customInterests.includes(v)) set("customInterests", [...d.customInterests, v]); setCustomInput(""); }}>Add</SecondaryButton>
                 </div>
               )}
             </div>
@@ -330,7 +383,7 @@ export function Wizard({ userId, areas, initial, initialStep, initialPhotos, isP
         {step === 5 && (
           <div className="flex flex-col gap-4">
             <SkipNote />
-            <Banner icon="🔒">Private. Never shown to anyone.</Banner>
+            <Banner icon="🔒" tone="light">Private. Never shown to anyone.</Banner>
             <WeightRow label="Star signs" value={d.weight_star} onChange={(v) => set("weight_star", v)} />
             <WeightRow label="Food" value={d.weight_food} onChange={(v) => set("weight_food", v)} />
             <div className="grid grid-cols-2 gap-3">
@@ -367,12 +420,12 @@ export function Wizard({ userId, areas, initial, initialStep, initialPhotos, isP
                 {photos.map((p) => (
                   <div key={p} className="relative">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photoUrl(p)} alt="Your upload" className="scallop h-24 w-24 object-cover" />
+                    <img src={photoUrl(p)} alt="Your upload" className="avatar-ring h-24 w-24 object-cover" />
                     <button className="text-link" onClick={() => void removePhoto(p)}>Remove</button>
                   </div>
                 ))}
                 {photos.length < 3 && (
-                  <label className="scallop flex h-24 w-24 cursor-pointer items-center justify-center text-3xl" aria-label="Add a photo">
+                  <label className="avatar-ring flex h-24 w-24 cursor-pointer items-center justify-center text-3xl" style={{ color: "var(--ink)" }} aria-label="Add a photo">
                     +
                     <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadPhoto(f); e.target.value = ""; }} />
                   </label>
@@ -406,15 +459,15 @@ export function Wizard({ userId, areas, initial, initialStep, initialPhotos, isP
               <input id="pn" className="field" value={d.prompt_nonneg} maxLength={80} onChange={(e) => set("prompt_nonneg", e.target.value)} placeholder="Front row for aarti" />
             </div>
             <div className="flex flex-col gap-2 text-sm font-semibold">
-              <label className="flex items-start gap-2"><input type="checkbox" className="mt-1 h-5 w-5 accent-[#b3202e]" checked={d.consentTerms} onChange={(e) => set("consentTerms", e.target.checked)} /> I accept the Terms.</label>
-              <label className="flex items-start gap-2"><input type="checkbox" className="mt-1 h-5 w-5 accent-[#b3202e]" checked={d.consentPrivacy} onChange={(e) => set("consentPrivacy", e.target.checked)} /> I accept the Privacy notice.</label>
-              <label className="flex items-start gap-2"><input type="checkbox" className="mt-1 h-5 w-5 accent-[#b3202e]" checked={d.consentWipe} onChange={(e) => set("consentWipe", e.target.checked)} /> I know my data is deleted on 21 October.</label>
+              <label className="flex items-start gap-2"><input type="checkbox" className="mt-1 h-5 w-5 accent-[#FF4F8B]" checked={d.consentTerms} onChange={(e) => set("consentTerms", e.target.checked)} /> I accept the Terms.</label>
+              <label className="flex items-start gap-2"><input type="checkbox" className="mt-1 h-5 w-5 accent-[#FF4F8B]" checked={d.consentPrivacy} onChange={(e) => set("consentPrivacy", e.target.checked)} /> I accept the Privacy notice.</label>
+              <label className="flex items-start gap-2"><input type="checkbox" className="mt-1 h-5 w-5 accent-[#FF4F8B]" checked={d.consentWipe} onChange={(e) => set("consentWipe", e.target.checked)} /> I know my data is deleted {wipeLabel()}.</label>
             </div>
           </div>
         )}
 
         <div className="mt-6 flex items-center justify-between gap-3">
-          <SecondaryButton disabled={step === 1 || busy} onClick={() => void saveAll(d, step).then(() => setStep(step - 1))}>
+          <SecondaryButton disabled={step === 1 || busy} onClick={() => void saveAll(d, step).then(() => setStep(step - 1))} className="btn-on-light">
             Back
           </SecondaryButton>
           {[3, 4, 5].includes(step) ? (
@@ -438,7 +491,7 @@ function SkipNote() {
 function Toggle({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
   return (
     <label className="mt-2 flex items-center gap-2 text-sm font-semibold">
-      <input type="checkbox" className="h-5 w-5 accent-[#b3202e]" checked={value} onChange={(e) => onChange(e.target.checked)} />
+      <input type="checkbox" className="h-5 w-5 accent-[#FF4F8B]" checked={value} onChange={(e) => onChange(e.target.checked)} />
       {label}
     </label>
   );

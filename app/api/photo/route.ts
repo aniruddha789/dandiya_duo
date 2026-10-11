@@ -15,17 +15,26 @@ export async function GET(request: Request) {
 
   const admin = await createServiceClient();
   // Requester must be a live, unbanned user.
-  const { data: me } = await admin.from("profiles").select("id,city,is_live,is_paused,is_banned").eq("id", user.id).single();
+  const { data: me } = await admin.from("profiles").select("id,city_id,is_live,is_paused,is_banned").eq("id", user.id).single();
   if (!me || !me.is_live || me.is_paused || me.is_banned) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
-  // Target must be live, same city, unblocked both ways (or the requester themself).
+  // Target must be live, in the same city or metro pool, unblocked both ways
+  // (or the requester themself).
   if (owner !== user.id) {
     const { data: target } = await admin.from("profiles")
-      .select("id,city,is_live,is_paused,is_banned").eq("id", owner).single();
-    if (!target || !target.is_live || target.is_paused || target.is_banned || target.city !== me.city) {
+      .select("id,city_id,is_live,is_paused,is_banned").eq("id", owner).single();
+    if (!target || !target.is_live || target.is_paused || target.is_banned) {
       return NextResponse.json({ error: "forbidden" }, { status: 403 });
     }
+    let samePool = target.city_id === me.city_id;
+    if (!samePool && target.city_id && me.city_id) {
+      const { data: metros } = await admin.from("cities").select("id,metro_slug").in("id", [target.city_id, me.city_id]);
+      const m = new Map((metros ?? []).map((r: { id: string; metro_slug: string | null }) => [r.id, r.metro_slug]));
+      const a = m.get(target.city_id);
+      samePool = !!a && a === m.get(me.city_id);
+    }
+    if (!samePool) return NextResponse.json({ error: "forbidden" }, { status: 403 });
     const { data: blocked } = await admin.from("blocks").select("blocker")
       .or(`and(blocker.eq.${user.id},blocked.eq.${owner}),and(blocker.eq.${owner},blocked.eq.${user.id})`).limit(1);
     if (blocked && blocked.length > 0) return NextResponse.json({ error: "forbidden" }, { status: 403 });

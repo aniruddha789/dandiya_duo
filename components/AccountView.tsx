@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { Banner, Card, PrimaryButton, SecondaryButton } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
-import { liveReady, type Draft } from "@/lib/completeness";
+import type { Draft } from "@/lib/completeness";
 
 const SECTIONS = [
   { step: 1, title: "The basics", desc: "City, name, age, area" },
@@ -17,20 +17,33 @@ const SECTIONS = [
   { step: 6, title: "Your card", desc: "Photos, handle, prompts" },
 ];
 
-export default function AccountPage({ draft, paused, blocked, completeness }: {
-  draft: Draft; paused: boolean; blocked: Array<{ id: string; name: string }>; completeness: number;
+export default function AccountPage({ draft, paused, wasLive, blocked, completeness, includeNearby, metroName }: {
+  draft: Draft; paused: boolean; wasLive: boolean; blocked: Array<{ id: string; name: string }>; completeness: number;
+  includeNearby: boolean; metroName: string | null;
 }) {
   const supabase = createClient();
   const router = useRouter();
   const [isPaused, setIsPaused] = useState(paused);
+  const [nearby, setNearby] = useState(includeNearby);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
+  async function toggleNearby() {
+    setBusy(true);
+    const { error } = await supabase.from("profiles").update({ include_nearby: !nearby }).eq("id", (await supabase.auth.getUser()).data.user!.id);
+    setBusy(false);
+    if (error) setNotice(error.message);
+    else {
+      setNearby(!nearby);
+      setNotice(!nearby ? "Widened! Nearby metro cities are now in your pool." : "Narrowed to your city only.");
+    }
+  }
+
   async function togglePause() {
     setBusy(true);
     const { error } = await supabase.from("profiles").update({
-      is_paused: !isPaused, is_live: !isPaused ? false : liveReady(draft),
+      is_paused: !isPaused, is_live: !isPaused ? false : wasLive,
     }).eq("id", (await supabase.auth.getUser()).data.user!.id);
     setBusy(false);
     if (error) setNotice(error.message);
@@ -71,8 +84,8 @@ export default function AccountPage({ draft, paused, blocked, completeness }: {
             <h2 className="font-display text-xl font-black">Profile completeness</h2>
             <span className="font-display text-xl font-black">{completeness}%</span>
           </div>
-          <div className="mt-2 h-4 overflow-hidden rounded-full border-2" style={{ borderColor: "var(--bark)" }}>
-            <div className="h-full" style={{ width: `${completeness}%`, background: "var(--crimson)" }} />
+          <div className="mt-2 h-4 overflow-hidden rounded-full" style={{ border: "1.5px solid var(--line-light)" }}>
+            <div className="h-full" style={{ width: `${completeness}%`, background: "linear-gradient(94deg, var(--marigold), var(--pink))" }} />
           </div>
           {completeness < 100 && <p className="mt-1 text-sm font-semibold">Fill the skipped sections below for better matches.</p>}
         </Card>
@@ -85,7 +98,7 @@ export default function AccountPage({ draft, paused, blocked, completeness }: {
                   <h3 className="font-display text-lg font-black">{s.title}</h3>
                   <p className="text-xs font-semibold">{s.desc}</p>
                 </div>
-                <Link href={`/onboarding?step=${s.step}&edit=1`} className="btn-secondary !min-h-[44px] !py-1">Edit</Link>
+                <Link href={`/onboarding?step=${s.step}&edit=1`} className="btn-secondary btn-on-light !min-h-[44px] !py-1">Edit</Link>
               </div>
             </Card>
           ))}
@@ -98,6 +111,20 @@ export default function AccountPage({ draft, paused, blocked, completeness }: {
             {isPaused ? "Unpause my profile" : "Pause my profile"}
           </PrimaryButton>
         </Card>
+
+        {metroName && (
+          <Card className="mt-4">
+            <h2 className="font-display text-xl font-black">Nearby cities</h2>
+            <p className="text-sm font-semibold">
+              {nearby
+                ? `On — your pool includes nearby cities in your metro.`
+                : "Off — only your city."}
+            </p>
+            <SecondaryButton className="btn-on-light mt-2" disabled={busy} onClick={() => void toggleNearby()}>
+              {nearby ? "City only, please" : "Include nearby cities"}
+            </SecondaryButton>
+          </Card>
+        )}
 
         <Card className="mt-4">
           <h2 className="font-display text-xl font-black">Blocked ({blocked.length})</h2>
