@@ -1,0 +1,163 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* DandiyaDuo design tokens — original "bold sticker / festival poster" look */
+:root {
+  --marigold: #f0a92e;
+  --marigold-deep: #d98f14;
+  --cream: #fff6e6;
+  --cream-dim: #f7e8cd;
+  --bark: #3d2313;
+  --crimson: #b3202e;
+  --royal: #2338b0;
+  --leaf: #2e7d3a;
+  --dot: rgba(61, 35, 19, 0.14);
+  --radius-card: 22px;
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--marigold);
+  background-image: radial-gradient(var(--dot) 1.4px, transparent 1.4px);
+  background-size: 22px 22px;
+  color: var(--bark);
+  font-family: var(--font-body), system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+.headline {
+  color: var(--royal);
+  text-shadow:
+    2px 2px 0 var(--cream),
+    -1px -1px 0 var(--cream),
+    1px -1px 0 var(--cream),
+    -1px 1px 0 var(--cream);
+  letter-spacing: -0.01em;
+}
+
+.sticker-card {
+  background: var(--cream);
+  border: 3px solid var(--bark);
+  border-radius: var(--radius-card);
+  box-shadow: 5px 5px 0 var(--bark);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0.7rem 1.6rem;
+  border-radius: 999px;
+  background: var(--bark);
+  color: #ffd166;
+  font-family: var(--font-display), serif;
+  font-size: 1.05rem;
+  border: 3px solid var(--bark);
+  box-shadow: 3px 3px 0 rgba(61, 35, 19, 0.35);
+  cursor: pointer;
+}
+.btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0.7rem 1.6rem;
+  border-radius: 999px;
+  background: var(--cream);
+  color: var(--bark);
+  border: 3px solid var(--bark);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  border: 2.5px solid var(--bark);
+  background: var(--cream);
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  user-select: none;
+}
+.chip[aria-pressed="true"] {
+  background: var(--bark);
+  color: #ffd166;
+}
+
+.banner {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  background: #ffd166;
+  border: 2.5px solid var(--bark);
+  border-radius: 16px;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.92rem;
+  box-shadow: 3px 3px 0 var(--bark);
+}
+
+.field {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 14px;
+  border: 2.5px solid var(--bark);
+  background: #fffdf7;
+  padding: 0.6rem 0.9rem;
+  font-size: 1rem;
+  color: var(--bark);
+}
+.field::placeholder {
+  color: rgba(61, 35, 19, 0.45);
+}
+
+.label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 0.35rem;
+  display: block;
+}
+
+.text-link {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: inherit;
+  padding: 6px 4px;
+}
+
+.scallop {
+  border-radius: 48% 52% 51% 49% / 52% 48% 52% 48%;
+  border: 3px solid var(--bark);
+  overflow: hidden;
+  background: var(--cream-dim);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
