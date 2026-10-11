@@ -7,6 +7,7 @@ import { AppShell } from "@/components/AppShell";
 import { Banner, Card, PrimaryButton } from "@/components/ui";
 import { DiyaMascot } from "@/components/Mascots";
 import { createClient } from "@/lib/supabase/client";
+import { siteUrl } from "@/lib/site";
 
 function LoginForm() {
   const params = useSearchParams();
@@ -24,7 +25,7 @@ function LoginForm() {
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
+      options: { emailRedirectTo: `${siteUrl()}/auth/callback?next=${encodeURIComponent(next)}` },
     });
     setBusy(false);
     if (error) setError(error.message);

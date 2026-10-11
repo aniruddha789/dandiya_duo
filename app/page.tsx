@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { SunflowerMascot, DiyaMascot } from "@/components/Mascots";
 import { Banner, Card } from "@/components/ui";
 import { CITIES, SEASON_LABEL, WIPE_DATE, cityLabel } from "@/lib/config";
 
-type Props = { searchParams: Promise<{ city?: string }> };
+type Props = { searchParams: Promise<{ city?: string; code?: string }> };
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const { city } = await searchParams;
@@ -20,7 +21,10 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 export default async function Landing({ searchParams }: Props) {
-  const { city } = await searchParams;
+  const { city, code } = await searchParams;
+  // Safety net: if Supabase ever falls back to the Site URL root with a
+  // code (misconfigured redirect allow-list), forward it to the exchanger.
+  if (code) redirect(`/auth/callback?code=${encodeURIComponent(code)}&next=/onboarding`);
   const active = CITIES.some((c) => c.id === city) ? city! : "bengaluru";
 
   return (
