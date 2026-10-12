@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ProgressDiyas, SunflowerMascot } from "@/components/Mascots";
+import { DandiyaLoaderScreen } from "@/components/DandiyaLoader";
 import { Banner, Card, Chip, PrimaryButton, SecondaryButton } from "@/components/ui";
 import { photoUrl, type Area } from "@/lib/types";
 import { HANDLE_RE, liveReady, step1Done, step2Done, step6Done, type Draft } from "@/lib/completeness";
@@ -169,6 +170,7 @@ export function Wizard({ userId, areas, initial, initialStep, initialPhotos, isP
 
   return (
     <div className="mx-auto w-full max-w-[560px] pt-4">
+      {busy && <DandiyaLoaderScreen label={step === 6 ? "Setting up your card…" : "Saving…"} />}
       <ProgressDiyas step={step} />
       <p className="mt-2 text-center text-sm font-bold">Step {step} of 6 · {STEP_TITLES[step - 1]}</p>
 

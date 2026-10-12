@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppShell } from "@/components/AppShell";
 import { Banner, Card, SecondaryButton } from "@/components/ui";
 import { DiyaMascot, SunflowerMascot } from "@/components/Mascots";
+import { DandiyaLoaderInline } from "@/components/DandiyaLoader";
 import { ReportDialog } from "@/components/MatchCard";
 import { createClient } from "@/lib/supabase/client";
 import { photoUrl, type Connection } from "@/lib/types";
@@ -63,7 +64,7 @@ export default function ConnectionsPage() {
         <h1 className="headline font-display text-4xl font-black">Saathi</h1>
         <p className="font-semibold">Mutual yeses only. Handles unlocked 🔓</p>
         {notice && <div className="mt-3"><Banner icon="🪔">{notice}</Banner></div>}
-        {list.isPending && <Card className="mt-4">Checking the circle…</Card>}
+        {list.isPending && <Card className="mt-4"><DandiyaLoaderInline label="Checking the circle…" /></Card>}
 
         {!list.isPending && conns.length === 0 && (
           <Card className="mt-4 text-center">

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Fraunces, Outfit } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
+import { RouteLoader } from "@/components/RouteLoader";
 
 const display = Fraunces({ subsets: ["latin"], weight: ["700", "900"], variable: "--font-display" });
 const body = Outfit({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-body" });
@@ -18,7 +20,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${display.variable} ${body.variable} font-body antialiased`}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <Suspense fallback={null}>
+            <RouteLoader />
+          </Suspense>
+          {children}
+        </Providers>
       </body>
     </html>
   );

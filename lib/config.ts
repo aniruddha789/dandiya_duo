@@ -7,9 +7,21 @@ export const GRIEVANCE_EMAIL = "hello@dandiyaduo.example";
 export const SEASON_LABEL = "11–19 Oct 2026";
 
 export const CITIES = [
-  { id: "bengaluru", label: "Bengaluru" },
+  { id: "mumbai", label: "Mumbai" },
   { id: "delhi_ncr", label: "Delhi NCR" },
+  { id: "bengaluru", label: "Bengaluru" },
+  { id: "hyderabad", label: "Hyderabad" },
   { id: "pune", label: "Pune" },
+  { id: "chennai", label: "Chennai" },
+  { id: "kolkata", label: "Kolkata" },
+  { id: "ahmedabad", label: "Ahmedabad" },
+  { id: "surat", label: "Surat" },
+  { id: "jaipur", label: "Jaipur" },
+  { id: "lucknow", label: "Lucknow" },
+  { id: "nagpur", label: "Nagpur" },
+  { id: "indore", label: "Indore" },
+  { id: "chandigarh", label: "Chandigarh" },
+  { id: "kochi", label: "Kochi" },
 ] as const;
 export type CityId = (typeof CITIES)[number]["id"];
 

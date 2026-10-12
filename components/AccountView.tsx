@@ -5,8 +5,53 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { Banner, Card, PrimaryButton, SecondaryButton } from "@/components/ui";
+import { SunflowerMascot } from "@/components/Mascots";
+import { DandiyaLoader, DandiyaLoaderScreen } from "@/components/DandiyaLoader";
 import { createClient } from "@/lib/supabase/client";
+import { AFTER_GARBA, DANCE_LEVELS, DIETS, INTENTIONS } from "@/lib/config";
+import { photoUrl } from "@/lib/types";
 import { liveReady, type Draft } from "@/lib/completeness";
+
+function CardPreviewView({ preview: p }: { preview: CardPreview }) {
+  const photo = p.photo_paths[0];
+  const dance = DANCE_LEVELS.find((x) => x.id === p.dance_level)?.label ?? p.dance_level;
+  const intention = INTENTIONS.find((x) => x.id === p.intention)?.label ?? p.intention;
+  const diet = DIETS.find((x) => x.id === p.diet)?.label;
+  const after = AFTER_GARBA.find((x) => x.id === p.after_garba)?.label;
+  return (
+    <div className="sticker-card mt-4 p-4">
+      <p className="text-xs font-extrabold uppercase tracking-wide opacity-70">How others see you</p>
+      <div className="mt-2 flex items-center gap-3">
+        <div className="scallop h-20 w-20 shrink-0">
+          {photo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={photoUrl(photo)} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center"><SunflowerMascot size={64} /></div>
+          )}
+        </div>
+        <div>
+          <h2 className="font-display text-2xl font-black">{p.first_name}, {p.age}</h2>
+          <p className="text-xs font-semibold opacity-70">Going {p.nights} night{p.nights === 1 ? "" : "s"}</p>
+        </div>
+      </div>
+      <ul className="mt-3 flex flex-col gap-1 text-sm font-semibold">
+        <li>📍 {p.area ?? "Somewhere nearby"} · {dance}</li>
+        <li>💃 {intention}</li>
+        {p.languages.length > 0 && <li>🗣️ {p.languages.join(", ")}</li>}
+        {p.hometown && <li>🏠 From {p.hometown}</li>}
+        {after && <li>🌙 After garba: {after}{diet ? ` · ${diet}` : ""}{p.cuisines.length > 0 ? ` · loves ${p.cuisines.slice(0, 2).join(", ").toLowerCase()}` : ""}</li>}
+      </ul>
+      {(p.prompt_move || p.prompt_nonneg) && (
+        <div className="mt-2 flex flex-col gap-2">
+          {p.prompt_move && <p className="rounded-xl border p-2 text-sm"><b>My signature move:</b> {p.prompt_move}</p>}
+          {p.prompt_nonneg && <p className="rounded-xl border p-2 text-sm"><b>Non-negotiable:</b> {p.prompt_nonneg}</p>}
+        </div>
+      )}
+      <p className="mt-2 text-xs opacity-70">Your score and reason chips are personal to each viewer — everything else is exactly what they see.</p>
+    </div>
+  );
+}
 
 const SECTIONS = [
   { step: 1, title: "The basics", desc: "City, name, age, area" },
@@ -17,8 +62,17 @@ const SECTIONS = [
   { step: 6, title: "Your card", desc: "Photos, handle, prompts" },
 ];
 
-export default function AccountPage({ draft, paused, blocked, completeness }: {
+export type CardPreview = {
+  first_name: string; age: number; area: string | null;
+  dance_level: string; intention: string; languages: string[];
+  hometown: string | null; diet: string | null; cuisines: string[];
+  after_garba: string | null; prompt_move: string | null;
+  prompt_nonneg: string | null; photo_paths: string[]; nights: number;
+};
+
+export default function AccountPage({ draft, paused, blocked, completeness, preview }: {
   draft: Draft; paused: boolean; blocked: Array<{ id: string; name: string }>; completeness: number;
+  preview: CardPreview;
 }) {
   const supabase = createClient();
   const router = useRouter();
@@ -62,9 +116,12 @@ export default function AccountPage({ draft, paused, blocked, completeness }: {
 
   return (
     <AppShell>
+      {busy && <DandiyaLoaderScreen label="One sec…" />}
       <div className="mx-auto max-w-xl pt-4">
         <h1 className="headline font-display text-4xl font-black">Account</h1>
         {notice && <div className="mt-3"><Banner icon="🪔">{notice}</Banner></div>}
+
+        <CardPreviewView preview={preview} />
 
         <Card className="mt-4">
           <div className="flex items-center justify-between">
@@ -95,7 +152,9 @@ export default function AccountPage({ draft, paused, blocked, completeness }: {
           <h2 className="font-display text-xl font-black">Visibility</h2>
           <p className="text-sm font-semibold">{isPaused ? "Paused — you’re hidden from everyone’s feed." : "Live — you’re in the matching pool."}</p>
           <PrimaryButton className="mt-2" disabled={busy} onClick={() => void togglePause()}>
-            {isPaused ? "Unpause my profile" : "Pause my profile"}
+            {busy ? (
+              <span className="inline-flex items-center gap-2"><DandiyaLoader size={24} /> Working…</span>
+            ) : isPaused ? "Unpause my profile" : "Pause my profile"}
           </PrimaryButton>
         </Card>
 

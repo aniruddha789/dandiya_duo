@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { DancerPeek, DiyaMascot } from "@/components/Mascots";
+import { DancerPeek } from "@/components/Mascots";
 import { cn } from "@/lib/utils";
 
 const TABS = [
@@ -13,8 +13,10 @@ const TABS = [
 
 export function AppShell({ children, showNav = true }: { children: React.ReactNode; showNav?: boolean }) {
   const pathname = usePathname();
+  // Full-bleed shell: the desktop sidebar anchors to the viewport's
+  // left edge on every screen width; only the content column is capped.
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-6xl">
+    <div className="flex min-h-screen w-full">
       {/* Desktop sidebar */}
       {showNav && (
         <aside
@@ -41,13 +43,10 @@ export function AppShell({ children, showNav = true }: { children: React.ReactNo
               );
             })}
           </nav>
-          <div className="mt-auto flex justify-center">
-            <DiyaMascot size={90} />
-          </div>
         </aside>
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="mx-auto flex min-w-0 w-full max-w-3xl flex-1 flex-col">
         {/* Mobile top brand */}
         <header className="flex items-center justify-between p-4 md:hidden">
           <Link href="/" className="font-display text-2xl font-black headline">
@@ -91,10 +90,13 @@ export function AppShell({ children, showNav = true }: { children: React.ReactNo
         )}
       </div>
 
-      {/* Desktop dancer peeking from bottom-right */}
-      <div aria-hidden className="pointer-events-none fixed bottom-0 right-2 hidden lg:block">
-        <DancerPeek size={130} />
-      </div>
+      {/* Landing-only dancer peeking from bottom-right — hidden in the
+          logged-in UI (matches / connections / account / onboarding). */}
+      {!showNav && (
+        <div aria-hidden className="pointer-events-none fixed bottom-0 right-2 hidden lg:block">
+          <DancerPeek size={130} />
+        </div>
+      )}
     </div>
   );
 }

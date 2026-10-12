@@ -3,8 +3,10 @@ import { Suspense } from "react";
 import { AppShell } from "@/components/AppShell";
 import { Wizard } from "@/components/Wizard";
 import { createClient } from "@/lib/supabase/server";
-import { seasonNights } from "@/lib/config";
+import { CITIES, seasonNights } from "@/lib/config";
 import type { Draft } from "@/lib/completeness";
+
+const CITY_IDS = new Set<string>(CITIES.map((c) => c.id));
 
 function emptyDraft(city: string): Draft {
   return {
@@ -46,7 +48,7 @@ export default async function Onboarding({
   ]);
 
   const d = emptyDraft(
-    profile?.city ?? (city && ["bengaluru", "delhi_ncr", "pune"].includes(city) ? city : "bengaluru"),
+    profile?.city ?? (city && CITY_IDS.has(city) ? city : "bengaluru"),
   );
   if (profile) {
     Object.assign(d, {

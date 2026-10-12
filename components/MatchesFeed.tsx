@@ -6,6 +6,7 @@ import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { AppShell } from "@/components/AppShell";
 import { Banner, Card, SecondaryButton } from "@/components/ui";
 import { DiyaMascot } from "@/components/Mascots";
+import { DandiyaLoader, DandiyaLoaderInline } from "@/components/DandiyaLoader";
 import { Celebration, MatchCardView, ReportDialog } from "@/components/MatchCard";
 import { createClient } from "@/lib/supabase/client";
 import type { MatchCard } from "@/lib/types";
@@ -65,7 +66,7 @@ export default function MatchesPage({ city }: { city: string }) {
         <p className="font-semibold">Sorted by how well you’d vibe on the floor.</p>
         {notice && <div className="mt-3"><Banner icon="🪔">{notice}</Banner></div>}
 
-        {feed.isPending && <Card className="mt-4">Warming up the dhol…</Card>}
+        {feed.isPending && <Card className="mt-4"><DandiyaLoaderInline label="Warming up the dhol…" /></Card>}
         {feed.isError && <Card className="mt-4">Couldn’t load matches. Pull to retry.</Card>}
 
         <div className="mt-4 flex flex-col gap-4">
@@ -93,7 +94,9 @@ export default function MatchesPage({ city }: { city: string }) {
 
         {feed.hasNextPage && (
           <SecondaryButton className="mt-4 w-full" disabled={feed.isFetchingNextPage} onClick={() => void feed.fetchNextPage()}>
-            {feed.isFetchingNextPage ? "Loading…" : "Show more"}
+            {feed.isFetchingNextPage ? (
+              <span className="inline-flex items-center gap-2"><DandiyaLoader size={22} /> Loading…</span>
+            ) : "Show more"}
           </SecondaryButton>
         )}
       </div>

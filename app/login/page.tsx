@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { AppShell } from "@/components/AppShell";
 import { Banner, Card, PrimaryButton } from "@/components/ui";
 import { DiyaMascot } from "@/components/Mascots";
+import { DandiyaLoader } from "@/components/DandiyaLoader";
 import { createClient } from "@/lib/supabase/client";
 import { siteUrl } from "@/lib/site";
 
@@ -13,6 +14,7 @@ function LoginForm() {
   const params = useSearchParams();
   const router = useRouter();
   const next = params.get("next") || "/onboarding";
+  const urlError = params.get("error");
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +38,7 @@ function LoginForm() {
     <div className="mx-auto max-w-md pt-8">
       <div className="flex justify-center"><DiyaMascot size={90} /></div>
       <h1 className="headline font-display mt-2 text-center text-4xl font-black">Come on in</h1>
+      {urlError && <Banner icon="⚠️">{urlError}</Banner>}
       {sent ? (
         <Card className="mt-5 text-center">
           <p className="font-bold">Check your inbox ✉️</p>
@@ -51,7 +54,11 @@ function LoginForm() {
               value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email"
             />
             {error && <Banner icon="⚠️">{error}</Banner>}
-            <PrimaryButton disabled={busy}>{busy ? "Sending…" : "Send magic link"}</PrimaryButton>
+            <PrimaryButton disabled={busy}>
+              {busy ? (
+                <span className="inline-flex items-center gap-2"><DandiyaLoader size={24} /> Sending…</span>
+              ) : "Send magic link"}
+            </PrimaryButton>
           </form>
           <p className="mt-3 text-xs">By continuing you confirm you’re 18+ and accept the Terms and Privacy pages.</p>
         </Card>

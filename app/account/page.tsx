@@ -12,15 +12,19 @@ export default async function Account() {
   if (!profile) redirect("/onboarding");
 
   // completeness: share of filled optional fields
-  const [langs, cuisines, genres, interests, db, insta, photos, blocks] = await Promise.all([
+  const [langs, cuisines, genres, interests, db, insta, photos, blocks, areaRow, nightRows] = await Promise.all([
     supabase.from("profile_languages").select("lang").eq("profile_id", user.id),
     supabase.from("profile_cuisines").select("cuisine").eq("profile_id", user.id),
     supabase.from("profile_movie_genres").select("genre").eq("profile_id", user.id),
     supabase.from("profile_interests").select("label").eq("profile_id", user.id),
     supabase.from("dealbreakers").select("*").eq("profile_id", user.id).single(),
     supabase.from("profile_instagram").select("handle").eq("profile_id", user.id).single(),
-    supabase.from("photos").select("id").eq("profile_id", user.id),
+    supabase.from("photos").select("id,storage_path").eq("profile_id", user.id).order("position"),
     supabase.from("blocks").select("blocked").eq("blocker", user.id),
+    profile.area_id
+      ? supabase.from("areas").select("name").eq("id", profile.area_id).single()
+      : Promise.resolve({ data: null }),
+    supabase.from("profile_nights").select("night").eq("profile_id", user.id),
   ]);
 
   const bits = [
@@ -55,5 +59,28 @@ export default async function Account() {
     consentTerms: true, consentPrivacy: true, consentWipe: true,
   } satisfies Draft;
 
-  return <AccountPage draft={draft} paused={profile.is_paused} blocked={blockedNames} completeness={completeness} />;
+  return (
+    <AccountPage
+      draft={draft}
+      paused={profile.is_paused}
+      blocked={blockedNames}
+      completeness={completeness}
+      preview={{
+        first_name: profile.first_name,
+        age: profile.age,
+        area: areaRow.data?.name ?? null,
+        dance_level: profile.dance_level,
+        intention: profile.intention,
+        languages: profile.show_languages ? (langs.data ?? []).map((l) => l.lang) : [],
+        hometown: profile.show_hometown ? profile.hometown : null,
+        diet: profile.show_food ? profile.diet : null,
+        cuisines: profile.show_food ? (cuisines.data ?? []).map((c) => c.cuisine) : [],
+        after_garba: profile.show_food ? profile.after_garba : null,
+        prompt_move: profile.prompt_move,
+        prompt_nonneg: profile.prompt_nonneg,
+        photo_paths: (photos.data ?? []).map((p) => p.storage_path),
+        nights: (nightRows.data ?? []).length,
+      }}
+    />
+  );
 }

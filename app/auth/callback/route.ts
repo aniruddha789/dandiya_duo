@@ -7,7 +7,14 @@ export async function GET(request: Request) {
   const next = url.searchParams.get("next") || "/onboarding";
   if (code) {
     const supabase = await createClient();
-    await supabase.auth.exchangeCodeForSession(code);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      console.error("auth callback exchange failed:", error.message);
+      const login = new URL("/login", url.origin);
+      login.searchParams.set("next", next);
+      login.searchParams.set("error", error.message);
+      return NextResponse.redirect(login);
+    }
   }
   return NextResponse.redirect(new URL(next, url.origin));
 }

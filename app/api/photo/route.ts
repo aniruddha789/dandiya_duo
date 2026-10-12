@@ -14,13 +14,18 @@ export async function GET(request: Request) {
   if (!user) return NextResponse.json({ error: "auth required" }, { status: 401 });
 
   const admin = await createServiceClient();
-  // Requester must be a live, unbanned user.
   const { data: me } = await admin.from("profiles").select("id,city,is_live,is_paused,is_banned").eq("id", user.id).single();
-  if (!me || !me.is_live || me.is_paused || me.is_banned) {
+  if (!me || me.is_banned) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
-  // Target must be live, same city, unblocked both ways (or the requester themself).
+  // Owners always see their own uploads (even before going live or while
+  // paused) — otherwise step-6 / account previews break for new users.
+  // Everyone else must be live, unpaused, and in the same city pool.
   if (owner !== user.id) {
+    if (!me.is_live || me.is_paused) {
+      return NextResponse.json({ error: "forbidden" }, { status: 403 });
+    }
+    // Target must be live, same city, unblocked both ways.
     const { data: target } = await admin.from("profiles")
       .select("id,city,is_live,is_paused,is_banned").eq("id", owner).single();
     if (!target || !target.is_live || target.is_paused || target.is_banned || target.city !== me.city) {

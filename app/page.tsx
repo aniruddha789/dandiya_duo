@@ -4,28 +4,24 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { SunflowerMascot, DiyaMascot } from "@/components/Mascots";
 import { Banner, Card } from "@/components/ui";
-import { CITIES, SEASON_LABEL, WIPE_DATE, cityLabel } from "@/lib/config";
+import { SEASON_LABEL, WIPE_DATE } from "@/lib/config";
 
-type Props = { searchParams: Promise<{ city?: string; code?: string }> };
+type Props = { searchParams: Promise<{ code?: string }> };
 
-export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const { city } = await searchParams;
-  const valid = CITIES.some((c) => c.id === city);
-  const base = "DandiyaDuo — Find your circle this Navratri";
+export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: valid ? `${base} in ${cityLabel(city)}` : base,
-    description: valid
-      ? `A free, mutual-match-only garba partner finder for Navratri (${SEASON_LABEL}) in ${cityLabel(city)}.`
-      : `A free, mutual-match-only garba partner finder for Navratri (${SEASON_LABEL}) in Bengaluru, Delhi NCR and Pune.`,
+    title: "DandiyaDuo — Find your circle this Navratri",
+    description: `A free, mutual-match-only garba partner finder for Navratri (${SEASON_LABEL}) in cities across India.`,
   };
 }
 
 export default async function Landing({ searchParams }: Props) {
-  const { city, code } = await searchParams;
+  const { code } = await searchParams;
   // Safety net: if Supabase ever falls back to the Site URL root with a
   // code (misconfigured redirect allow-list), forward it to the exchanger.
   if (code) redirect(`/auth/callback?code=${encodeURIComponent(code)}&next=/onboarding`);
-  const active = CITIES.some((c) => c.id === city) ? city! : "bengaluru";
+  // City picking lives post-login (onboarding step 1 / account settings),
+  // not on the landing page.
 
   return (
     <AppShell showNav={false}>
@@ -40,22 +36,7 @@ export default async function Landing({ searchParams }: Props) {
           {SEASON_LABEL} · Free · Mutual match only
         </p>
 
-        <div className="mt-5 flex justify-center gap-2" role="tablist" aria-label="Choose your city">
-          {CITIES.map((c) => (
-            <Link
-              key={c.id}
-              href={`/?city=${c.id}`}
-              role="tab"
-              aria-selected={c.id === active}
-              className="chip"
-              data-selected={c.id === active}
-              style={c.id === active ? { background: "var(--bark)", color: "#ffd166" } : undefined}
-            >
-              {c.label}
-            </Link>
-          ))}
-        </div>
-        <h2 className="mt-4 text-xl font-bold">Looking for a garba match in {cityLabel(active)}?</h2>
+        <h2 className="mt-4 text-xl font-bold">Looking for a garba match in your city?</h2>
 
         <Banner icon="🪔">
           <span>
@@ -65,7 +46,7 @@ export default async function Landing({ searchParams }: Props) {
         </Banner>
 
         <div className="mt-5">
-          <Link href={`/onboarding?city=${active}`} className="btn-primary">
+          <Link href="/onboarding" className="btn-primary">
             Create my profile
           </Link>
         </div>
