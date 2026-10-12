@@ -32,3 +32,6 @@ Local auth is email magic link; links land in Mailpit http://127.0.0.1:55324. Ad
 - `supabase/seed.sql` header documents which option lists are tables vs `lib/config.ts` constants — read it before adding options.
 - Migrations are numbered `20261011…`/`20261012…` and carry rollback notes in header comments; follow that pattern. `get_matches` signature history (city_t → text, ambiguity fix in `...09`) — keep single `p_city text` overload.
 - `.env*` is gitignored (example committed); never commit local keys.
+
+## Commit msg
+At the end of every significant task, provide a summarized commit msg for all the changes done
