@@ -41,7 +41,7 @@ function LoginForm() {
       {urlError && <Banner icon="⚠️">{urlError}</Banner>}
       {sent ? (
         <Card className="mt-5 text-center">
-          <p className="font-bold">Check your inbox ✉️</p>
+          <p className="font-bold">Check your inbox / spam ✉️</p>
           <p className="mt-1 text-sm">We sent a magic link to {email}. Tap it on this device to hop in. Can’t find it? Please check your spam folder as well — mails have been landing in spam.</p>
           <button className="text-link mt-2" onClick={() => setSent(false)}>Use a different email</button>
         </Card>
