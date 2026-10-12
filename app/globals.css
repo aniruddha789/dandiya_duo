@@ -153,11 +153,24 @@ body {
   background: var(--cream-dim);
 }
 
+/* Sunflower mascot: slow petal rotation, face stays still. */
+@keyframes sunflower-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+  .sunflower-petals {
+    animation: none !important;
   }
 }

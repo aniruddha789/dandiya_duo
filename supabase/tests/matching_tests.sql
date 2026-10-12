@@ -77,4 +77,25 @@ begin
   raise notice 'seeking_ok OK';
 end $$;
 
+-- 6. hardening (migration 12): internal helpers locked, direct-write
+-- bypasses closed.
+do $$
+declare n int; wc text;
+begin
+  assert not has_function_privilege('anon', 'public.score_for(uuid,uuid)', 'execute'), 'score_for must not be callable by anon';
+  assert not has_function_privilege('authenticated', 'public.score_for(uuid,uuid)', 'execute'), 'score_for must not be callable by clients';
+  assert not has_function_privilege('anon', 'public.is_matched(uuid,uuid)', 'execute'), 'is_matched must not be callable by anon';
+  assert not has_function_privilege('authenticated', 'public.is_matched(uuid,uuid)', 'execute'), 'is_matched must not be callable by clients';
+  select count(*) into n from pg_policies
+    where tablename = 'swipes' and policyname = 'p_swipes_self';
+  assert n = 0, 'direct client swipes writes must be gone';
+  select count(*) into n from pg_policies
+    where tablename = 'swipes' and policyname = 'p_swipes_read';
+  assert n = 1, 'swipes read policy must exist';
+  select with_check into wc from pg_policies
+    where tablename = 'reports' and policyname = 'p_reports_insert';
+  assert wc like '%open%', 'direct report inserts must be constrained to open';
+  raise notice 'hardening OK';
+end $$;
+
 rollback;

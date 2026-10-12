@@ -1,21 +1,147 @@
 /* DandiyaDuo mascots — original artwork supplied by the team, inline SVG. */
 
-export function SunflowerMascot({ size = 120 }: { size?: number }) {
+type SunflowerMascotProps = {
+  size?: number;
+  className?: string;
+};
+
+export function SunflowerMascot({
+  size = 120,
+  className,
+}: SunflowerMascotProps) {
+  const petals = Array.from({ length: 12 }, (_, i) => i * 30);
+
   return (
-    <svg width={size} height={size} viewBox="0 0 120 120" fill="none" role="img" aria-label="Sunny the smiling sunflower">
-      <g fill="#FFC700" stroke="#E6A100" strokeWidth={2} strokeLinejoin="round">
-        <path d="M60 10 C65 25, 55 25, 60 10 Z" />
-        <path d="M60 10 C67 22, 77 28, 77 28 C77 28, 68 38, 60 38" />
-        <path d="M60 12 C66 28 72 32 82 20 C78 34 85 42 100 40 C88 49 90 60 105 60 C90 60 88 71 100 80 C85 78 78 86 82 100 C72 88 66 92 60 108 C54 92 48 88 38 100 C42 86 35 78 20 80 C32 71 30 60 15 60 C30 60 32 49 20 40 C35 42 42 34 38 20 C48 32 54 28 60 12 Z" />
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 120 120"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="Sunny the smiling sunflower"
+      className={className}
+      style={{ overflow: "visible" }}
+    >
+      <defs>
+        <linearGradient id="sunPetal" x1="35" y1="12" x2="85" y2="90">
+          <stop stopColor="#FFE66D" />
+          <stop offset="1" stopColor="#FFB800" />
+        </linearGradient>
+
+        <radialGradient id="sunCenter" cx="0.35" cy="0.25" r="0.9">
+          <stop stopColor="#A85C24" />
+          <stop offset="1" stopColor="#713510" />
+        </radialGradient>
+
+        <filter
+          id="sunShadow"
+          x="-20%"
+          y="-20%"
+          width="140%"
+          height="150%"
+        >
+          <feDropShadow
+            dx="0"
+            dy="2"
+            stdDeviation="2"
+            floodColor="#9B6410"
+            floodOpacity="0.18"
+          />
+        </filter>
+      </defs>
+
+      {/* Small leaves behind the flower */}
+      <g stroke="#388653" strokeWidth="1.5" strokeLinejoin="round">
+        <path
+          d="M49 91 C32 85 29 96 31 103 C42 103 48 99 49 91Z"
+          fill="#62BB70"
+        />
+        <path
+          d="M71 91 C88 84 92 96 89 103 C78 103 72 99 71 91Z"
+          fill="#43A862"
+        />
       </g>
-      <circle cx="60" cy="60" r="32" fill="#7B3F00" stroke="#5A2E00" strokeWidth={2} />
-      <circle cx="50" cy="55" r="4" fill="#1A1A1A" />
-      <circle cx="70" cy="55" r="4" fill="#1A1A1A" />
-      <circle cx="51.5" cy="53.5" r="1.5" fill="#FFFFFF" />
-      <circle cx="71.5" cy="53.5" r="1.5" fill="#FFFFFF" />
-      <ellipse cx="43" cy="63" rx="5" ry="3" fill="#FF8A8A" opacity={0.8} />
-      <ellipse cx="77" cy="63" rx="5" ry="3" fill="#FF8A8A" opacity={0.8} />
-      <path d="M52 65 Q60 74 68 65" stroke="#1A1A1A" strokeWidth={2.5} strokeLinecap="round" fill="none" />
+
+      {/* Rotating petals */}
+      <g
+        className="sunflower-petals"
+        style={{
+          animation: "sunflower-spin 12s linear infinite",
+          transformOrigin: "60px 60px",
+        }}
+        fill="url(#sunPetal)"
+        stroke="#F2AC00"
+        strokeWidth="1.1"
+        strokeLinejoin="round"
+        filter="url(#sunShadow)"
+      >
+        {petals.map((angle) => (
+          <ellipse
+            key={angle}
+            cx="60"
+            cy="29"
+            rx="8.2"
+            ry="19"
+            transform={`rotate(${angle} 60 60)`}
+          />
+        ))}
+      </g>
+
+      {/* Stationary flower center */}
+      <circle
+        cx="60"
+        cy="60"
+        r="29"
+        fill="url(#sunCenter)"
+        stroke="#713510"
+        strokeWidth="1.5"
+      />
+
+      {/* Tiny seed details around the edge */}
+      <g fill="#E9AE58" opacity="0.75">
+        {Array.from({ length: 16 }, (_, i) => {
+          const a = (i * Math.PI) / 8;
+          const x = 60 + Math.cos(a) * 23;
+          const y = 60 + Math.sin(a) * 23;
+
+          return (
+            <circle
+              key={i}
+              cx={x}
+              cy={y}
+              r="1.25"
+            />
+          );
+        })}
+      </g>
+
+      {/* Expressive eyes */}
+      <g fill="#24170F">
+        <ellipse cx="49" cy="55" rx="3.4" ry="5" />
+        <ellipse cx="71" cy="55" rx="3.4" ry="5" />
+      </g>
+
+      {/* Eye sparkles */}
+      <g fill="#FFFFFF">
+        <circle cx="50" cy="53.5" r="1.2" />
+        <circle cx="72" cy="53.5" r="1.2" />
+      </g>
+
+      {/* Rosy cheeks */}
+      <g fill="#FF8792" opacity="0.85">
+        <ellipse cx="41.5" cy="64" rx="5.5" ry="3.3" />
+        <ellipse cx="78.5" cy="64" rx="5.5" ry="3.3" />
+      </g>
+
+      {/* Smile */}
+      <path
+        d="M51 63 Q60 75 69 63"
+        stroke="#24170F"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        fill="none"
+      />
     </svg>
   );
 }

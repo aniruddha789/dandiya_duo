@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { DancerPeek } from "@/components/Mascots";
 import { cn } from "@/lib/utils";
 
 const TABS = [
@@ -90,13 +89,11 @@ export function AppShell({ children, showNav = true }: { children: React.ReactNo
         )}
       </div>
 
-      {/* Landing-only dancer peeking from bottom-right — hidden in the
-          logged-in UI (matches / connections / account / onboarding). */}
-      {!showNav && (
-        <div aria-hidden className="pointer-events-none fixed bottom-0 right-2 hidden lg:block">
-          <DancerPeek size={130} />
-        </div>
-      )}
+      {/* Garba couple, bottom-right on desktop (landing + logged-in UI). */}
+      <div aria-hidden className="pointer-events-none fixed bottom-0 right-2 hidden lg:block">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/duo-dancers.png" alt="" width={180} height={180} className="opacity-95" />
+      </div>
     </div>
   );
 }
