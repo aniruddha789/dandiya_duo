@@ -6,7 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { ProgressDiyas, SunflowerMascot } from "@/components/Mascots";
 import { DandiyaLoaderScreen } from "@/components/DandiyaLoader";
 import { Banner, Card, Chip, PrimaryButton, SecondaryButton } from "@/components/ui";
-import { photoUrl, type Area } from "@/lib/types";
+import type { Area } from "@/lib/types";
+import { useSignedPhotos } from "@/lib/photos";
 import { HANDLE_RE, liveReady, step1Done, step2Done, step6Done, type Draft } from "@/lib/completeness";
 import {
   AFTER_GARBA, CITIES, CUISINES, DANCE_LEVELS, DIETS, GENDERS, HOW_FAR, INTENTIONS,
@@ -32,6 +33,7 @@ export function Wizard({ userId, areas, initial, initialStep, initialPhotos, isP
   const [step, setStep] = useState(Math.min(6, Math.max(1, initialStep)));
   const [d, setD] = useState<Draft>(initial);
   const [photos, setPhotos] = useState<string[]>(initialPhotos);
+  const photoUrls = useSignedPhotos(photos);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [customInput, setCustomInput] = useState("");
@@ -367,11 +369,7 @@ export function Wizard({ userId, areas, initial, initialStep, initialPhotos, isP
               <span className="label">Photos (up to 3, optional)</span>
               <div className="flex gap-3">
                 {photos.map((p) => (
-                  <div key={p} className="relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photoUrl(p)} alt="Your upload" className="scallop h-24 w-24 object-cover" />
-                    <button className="text-link" onClick={() => void removePhoto(p)}>Remove</button>
-                  </div>
+                  <PhotoThumb key={p} path={p} urls={photoUrls} onRemove={() => void removePhoto(p)} />
                 ))}
                 {photos.length < 3 && (
                   <label className="scallop flex h-24 w-24 cursor-pointer items-center justify-center text-3xl" aria-label="Add a photo">
@@ -429,6 +427,25 @@ export function Wizard({ userId, areas, initial, initialStep, initialPhotos, isP
           )}
         </div>
       </Card>
+    </div>
+  );
+}
+
+function PhotoThumb({ path, urls, onRemove }: {
+  path: string; urls: Record<string, string | null>; onRemove: () => void;
+}) {
+  const src = urls[path];
+  return (
+    <div className="relative">
+      <div className="scallop h-24 w-24 overflow-hidden">
+        {typeof src === "string" && src.length > 0 ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={src} alt="Your upload" className="h-full w-full object-cover" />
+        ) : (
+          <div className="h-full w-full animate-pulse" style={{ background: "rgba(27,16,48,.08)" }} aria-label="Loading photo" />
+        )}
+      </div>
+      <button className="text-link" onClick={onRemove}>Remove</button>
     </div>
   );
 }

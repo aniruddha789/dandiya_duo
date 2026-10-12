@@ -7,6 +7,7 @@ import { AppShell } from "@/components/AppShell";
 import { Banner, Card, SecondaryButton } from "@/components/ui";
 import { DiyaMascot } from "@/components/Mascots";
 import { DandiyaLoader, DandiyaLoaderInline } from "@/components/DandiyaLoader";
+import { useSignedPhotos } from "@/lib/photos";
 import { Celebration, MatchCardView, ReportDialog } from "@/components/MatchCard";
 import { createClient } from "@/lib/supabase/client";
 import type { MatchCard } from "@/lib/types";
@@ -34,6 +35,8 @@ export default function MatchesPage({ city }: { city: string }) {
   });
 
   const cards = (feed.data?.pages ?? []).flat();
+  // One batched signed-URL call per feed page (RLS-governed, user session).
+  const photoUrls = useSignedPhotos(cards.flatMap((c) => c.photo_paths));
 
   async function swipe(card: MatchCard, action: "like" | "pass") {
     const { data, error } = await supabase.rpc("record_swipe", { p_target: card.profile_id, p_action: action });
@@ -72,7 +75,7 @@ export default function MatchesPage({ city }: { city: string }) {
         <div className="mt-4 flex flex-col gap-4">
           {cards.map((c) => (
             <MatchCardView
-              key={c.profile_id} card={c}
+              key={c.profile_id} card={c} photoUrls={photoUrls}
               onSwipe={(a) => void swipe(c, a)}
               onReport={() => setReporting(c)}
               onBlock={() => void block(c)}
@@ -84,7 +87,7 @@ export default function MatchesPage({ city }: { city: string }) {
           <Card className="mt-4 text-center">
             <div className="flex justify-center"><DiyaMascot size={90} /></div>
             <h2 className="font-display text-2xl font-black">No matches yet</h2>
-            <p className="mt-1 text-sm font-semibold">Your saathi is still warming up. More people join every day — share the link on your story and check back soon.</p>
+            <p className="mt-1 text-sm font-semibold">Your duo is still warming up. More people join every day — share the link on your story and check back soon.</p>
             <div className="mt-3 flex flex-col gap-2">
               <Link href="/onboarding?step=2&edit=1" className="btn-secondary">Add more nights</Link>
               <Link href="/onboarding?step=2&edit=1" className="btn-secondary">Widen how far I’ll pull up</Link>

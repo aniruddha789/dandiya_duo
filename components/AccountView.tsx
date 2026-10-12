@@ -5,15 +5,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { Banner, Card, PrimaryButton, SecondaryButton } from "@/components/ui";
-import { SunflowerMascot } from "@/components/Mascots";
+import { PhotoImg } from "@/components/PhotoImg";
 import { DandiyaLoader, DandiyaLoaderScreen } from "@/components/DandiyaLoader";
 import { createClient } from "@/lib/supabase/client";
 import { AFTER_GARBA, DANCE_LEVELS, DIETS, INTENTIONS } from "@/lib/config";
-import { photoUrl } from "@/lib/types";
+import { useSignedPhotos } from "@/lib/photos";
 import { liveReady, type Draft } from "@/lib/completeness";
 
 function CardPreviewView({ preview: p }: { preview: CardPreview }) {
   const photo = p.photo_paths[0];
+  const photoUrls = useSignedPhotos(p.photo_paths);
   const dance = DANCE_LEVELS.find((x) => x.id === p.dance_level)?.label ?? p.dance_level;
   const intention = INTENTIONS.find((x) => x.id === p.intention)?.label ?? p.intention;
   const diet = DIETS.find((x) => x.id === p.diet)?.label;
@@ -23,12 +24,7 @@ function CardPreviewView({ preview: p }: { preview: CardPreview }) {
       <p className="text-xs font-extrabold uppercase tracking-wide opacity-70">How others see you</p>
       <div className="mt-2 flex items-center gap-3">
         <div className="scallop h-20 w-20 shrink-0">
-          {photo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={photoUrl(photo)} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center"><SunflowerMascot size={64} /></div>
-          )}
+          <PhotoImg path={photo} urls={photoUrls} size={64} />
         </div>
         <div>
           <h2 className="font-display text-2xl font-black">{p.first_name}, {p.age}</h2>

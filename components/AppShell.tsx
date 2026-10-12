@@ -6,8 +6,8 @@ import { DancerPeek } from "@/components/Mascots";
 import { cn } from "@/lib/utils";
 
 const TABS = [
-  { href: "/matches", label: "Find saathi", icon: "🌼" },
-  { href: "/connections", label: "Saathi", icon: "🪔" },
+  { href: "/matches", label: "Find your duo", icon: "🌼" },
+  { href: "/connections", label: "Duos", icon: "🪔" },
   { href: "/account", label: "Account", icon: "👤" },
 ];
 

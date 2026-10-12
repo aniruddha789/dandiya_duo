@@ -64,7 +64,7 @@ update both. Scores are computed live per request (viewer perspective);
 
 1. New user finishes the wizard (skipping 3–5) → lands on ranked cards with
    reason chips, never a bare score.
-2. A likes B, B likes A → celebration, both handles visible in Saathi.
+2. A likes B, B likes A → celebration, both handles visible in Duos.
 3. Intercept API responses: no other user's handle or dealbreakers appear
    before a match.
 4. Block → both vanish from each other's world; pause → hidden from feeds.

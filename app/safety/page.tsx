@@ -8,7 +8,7 @@ export default function Safety() {
   return (
     <AppShell showNav={false}>
       <div className="mx-auto max-w-2xl pt-6">
-        <h1 className="headline font-display text-4xl font-black">Dance safe, saathi</h1>
+        <h1 className="headline font-display text-4xl font-black">Dance safe, duo</h1>
         <div className="mt-5 flex flex-col gap-4">
           <Card>
             <h2 className="font-display text-xl font-bold">18+ only</h2>

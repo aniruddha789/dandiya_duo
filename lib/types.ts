@@ -41,4 +41,4 @@ export type Connection = {
   matched_at: string;
 };
 
-export const photoUrl = (path: string) => `/api/photo?p=${encodeURIComponent(path)}`;
+

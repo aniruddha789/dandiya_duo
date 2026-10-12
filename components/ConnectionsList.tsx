@@ -6,9 +6,11 @@ import { AppShell } from "@/components/AppShell";
 import { Banner, Card, SecondaryButton } from "@/components/ui";
 import { DiyaMascot, SunflowerMascot } from "@/components/Mascots";
 import { DandiyaLoaderInline } from "@/components/DandiyaLoader";
+import { PhotoImg } from "@/components/PhotoImg";
+import { useSignedPhotos } from "@/lib/photos";
 import { ReportDialog } from "@/components/MatchCard";
 import { createClient } from "@/lib/supabase/client";
-import { photoUrl, type Connection } from "@/lib/types";
+import type { Connection } from "@/lib/types";
 
 export default function ConnectionsPage() {
   const supabase = createClient();
@@ -57,11 +59,12 @@ export default function ConnectionsPage() {
   }
 
   const conns = list.data ?? [];
+  const photoUrls = useSignedPhotos(conns.flatMap((c) => c.photo_paths));
 
   return (
     <AppShell>
       <div className="mx-auto max-w-xl pt-4">
-        <h1 className="headline font-display text-4xl font-black">Saathi</h1>
+        <h1 className="headline font-display text-4xl font-black">Duos</h1>
         <p className="font-semibold">Mutual yeses only. Handles unlocked 🔓</p>
         {notice && <div className="mt-3"><Banner icon="🪔">{notice}</Banner></div>}
         {list.isPending && <Card className="mt-4"><DandiyaLoaderInline label="Checking the circle…" /></Card>}
@@ -69,7 +72,7 @@ export default function ConnectionsPage() {
         {!list.isPending && conns.length === 0 && (
           <Card className="mt-4 text-center">
             <div className="flex justify-center"><DiyaMascot size={90} /></div>
-            <h2 className="font-display text-2xl font-black">No saathi yet</h2>
+            <h2 className="font-display text-2xl font-black">No duos yet</h2>
             <p className="mt-1 text-sm font-semibold">Tap “Let’s dance” on someone you like.</p>
           </Card>
         )}
@@ -82,12 +85,7 @@ export default function ConnectionsPage() {
               <article key={c.match_id} className="sticker-card p-4">
                 <div className="flex items-center gap-3">
                   <div className="scallop h-20 w-20 shrink-0">
-                    {photo ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={photoUrl(photo)} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center"><SunflowerMascot size={64} /></div>
-                    )}
+                    <PhotoImg path={photo} urls={photoUrls} size={64} />
                   </div>
                   <div>
                     <h3 className="font-display text-2xl font-black">{c.first_name}, {c.age}</h3>

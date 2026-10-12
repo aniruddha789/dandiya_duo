@@ -1,21 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { DiyaMascot, SunflowerMascot } from "@/components/Mascots";
+import { DiyaMascot } from "@/components/Mascots";
+import { PhotoImg } from "@/components/PhotoImg";
 import { ScoreBadge } from "@/components/ui";
-import { photoUrl, type MatchCard } from "@/lib/types";
+import type { MatchCard } from "@/lib/types";
 import { DANCE_LEVELS, INTENTIONS, nightLabel } from "@/lib/config";
 
 const danceLabel = (id: string) => DANCE_LEVELS.find((x) => x.id === id)?.label ?? id;
 const intentionLabel = (id: string) => INTENTIONS.find((x) => x.id === id)?.label ?? id;
 
 export function MatchCardView({
-  card, onSwipe, onReport, onBlock,
+  card, onSwipe, onReport, onBlock, photoUrls,
 }: {
   card: MatchCard;
   onSwipe: (action: "like" | "pass") => void;
   onReport: () => void;
   onBlock: () => void;
+  /** Pre-batched signed URLs (feed lists sign once per page). */
+  photoUrls?: Record<string, string | null>;
 }) {
   const [photoIdx, setPhotoIdx] = useState(0);
   const photo = card.photo_paths[photoIdx];
@@ -24,12 +27,7 @@ export function MatchCardView({
       <ScoreBadge score={card.score} />
       <div className="flex items-center gap-3 pr-16">
         <div className="scallop h-20 w-20 shrink-0">
-          {photo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={photoUrl(photo)} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center"><SunflowerMascot size={64} /></div>
-          )}
+          <PhotoImg path={photo} urls={photoUrls} size={64} />
         </div>
         <div>
           <h3 className="font-display text-2xl font-black">{card.first_name}, {card.age}</h3>
@@ -93,8 +91,8 @@ export function Celebration({ name, onClose }: { name: string; onClose: () => vo
           <DiyaMascot size={70} /><DiyaMascot size={90} /><DiyaMascot size={70} />
         </div>
         <h2 className="headline font-display mt-2 text-4xl font-black">It’s a match!</h2>
-        <p className="mt-2 font-semibold">{name} said yes too. Find them in Saathi 🪔</p>
-        <button className="btn-primary mt-4 w-full" onClick={onClose}>Say hi in Saathi</button>
+        <p className="mt-2 font-semibold">{name} said yes too. Find them in Duos 🪔</p>
+        <button className="btn-primary mt-4 w-full" onClick={onClose}>Say hi in Duos</button>
       </div>
     </div>
   );

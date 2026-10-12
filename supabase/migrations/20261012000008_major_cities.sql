@@ -3,21 +3,44 @@
 -- text so onboarding/settings can offer all major cities without a new
 -- migration per city. Existing rows keep their values via USING casts.
 --
+-- It also reconciles the other branch's multicity model where present
+-- (cities table + city_id keys, uuid get_matches overload): slugs are
+-- carried over to the text column and the uuid overload is retired, since
+-- the app calls get_matches(p_city text, ...).
+--
 -- ROLLBACK (data stays readable; enum restore is manual):
---   delete from areas where city not in ('bengaluru','delhi_ncr','pune');
 --   update profiles set city = 'bengaluru' where city not in ('bengaluru','delhi_ncr','pune');
---   alter table events alter column city type city_t using city::city_t;
 --   alter table areas alter column city type city_t using city::city_t;
 --   alter table profiles alter column city type city_t using city::city_t;
 --   (then re-create the city_t overload of get_matches from migration 04)
 
-alter table events alter column city type text using city::text;
+-- events only exists on the pre-multicity schema; don't fail where dropped.
+alter table if exists events alter column city type text using city::text;
 alter table areas alter column city type text using city::text;
 alter table profiles alter column city type text using city::text;
 
+-- Backfill rows created while city_id was the live key (multicity schema):
+-- carry the slug over to the text column. Skipped where the cities table
+-- or city_id keys don't exist (plain 01-04 schema).
+do $$
+begin
+  if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'cities') then
+    if exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'city_id') then
+      update profiles set city = (select slug from cities where cities.id = profiles.city_id)
+        where city is null and city_id is not null;
+    end if;
+    if exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'areas' and column_name = 'city_id') then
+      update areas set city = (select slug from cities where cities.id = areas.city_id)
+        where city is null and city_id is not null;
+    end if;
+  end if;
+end $$;
+
 -- get_matches filtered on the enum param; re-issue it with a text param.
--- Scoring/filters unchanged (body copied from migration 04).
+-- Scoring/filters unchanged (body copied from migration 04). Also drop the
+-- other branch's uuid overload, which the app never calls.
 drop function if exists get_matches(city_t, int, int);
+drop function if exists get_matches(uuid, boolean, int, int);
 
 create or replace function get_matches(p_city text, p_limit int default 20, p_offset int default 0)
 returns table (
